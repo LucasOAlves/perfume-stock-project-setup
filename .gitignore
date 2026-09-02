@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.angular/
+coverage/
+
+# Personal/local tool config — not portable, not meant to be shared. .claude/settings.json
+# (team-shared, no "local" suffix) would be fine to commit if it's ever added.
+.claude/settings.local.json
+
+# OS junk
+.DS_Store
+Thumbs.db

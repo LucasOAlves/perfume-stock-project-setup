@@ -1,0 +1,87 @@
+<h1>Estoque disponível</h1>
+
+@if (errorMessage()) {
+  <div class="error-banner">{{ errorMessage() }}</div>
+}
+
+<div class="field">
+  <label for="search">Buscar produto</label>
+  <input
+    id="search"
+    name="search"
+    type="search"
+    placeholder="Nome, marca ou SKU"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onSearchChange()"
+  />
+</div>
+
+<div class="owner-actions">
+  @if (isOwner()) {
+    <a class="btn-secondary" [routerLink]="['/networks', networkId, 'products', 'new']">+ Novo produto</a>
+    <button type="button" class="btn-secondary" (click)="generateInvite()" [disabled]="invitingLoading()">
+      {{ invitingLoading() ? 'Gerando…' : 'Convidar vendedor' }}
+    </button>
+    <a class="btn-secondary" [routerLink]="['/networks', networkId, 'members']">Membros e permissões</a>
+  }
+  <a class="btn-secondary" [routerLink]="['/networks', networkId, 'reservations', 'mine']">Minhas reservas</a>
+</div>
+@if (inviteCode()) {
+  <div class="card invite-card">
+    <p>Compartilhe este código com o novo vendedor:</p>
+    <code>{{ inviteCode() }}</code>
+  </div>
+}
+
+@if (loading()) {
+  <p>Carregando…</p>
+} @else if (products().length === 0) {
+  <div class="empty-state">
+    <p>{{ searchTerm ? 'Nenhum produto encontrado.' : 'Nenhum produto cadastrado ainda.' }}</p>
+  </div>
+} @else {
+  @for (product of products(); track product.id) {
+    <div class="card product-card" [class.inactive]="!product.isActive">
+      <div class="product-row">
+        <div class="product-info">
+          <strong>{{ product.name }}</strong>
+          @if (product.brand) {
+            <span class="brand">{{ product.brand }}</span>
+          }
+        </div>
+        <div class="product-meta">
+          <span class="availability-badge" [class]="availabilityClass(product)">
+            {{ availabilityLabel(product) }}
+          </span>
+          @if (isOwner()) {
+            <a class="edit-link" [routerLink]="['/networks', networkId, 'products', product.id, 'edit']">Editar</a>
+          }
+        </div>
+      </div>
+
+      @if (product.isActive && product.availableQuantity > 0) {
+        <div class="reserve-row">
+          <input
+            type="number"
+            min="1"
+            [max]="product.availableQuantity"
+            [(ngModel)]="reserveQuantities[product.id]"
+            [name]="'qty-' + product.id"
+            class="reserve-qty"
+          />
+          <button
+            type="button"
+            class="btn-secondary reserve-btn"
+            [disabled]="reservingProductId() === product.id"
+            (click)="reserveProduct(product)"
+          >
+            {{ reservingProductId() === product.id ? 'Reservando…' : 'Reservar' }}
+          </button>
+        </div>
+      }
+      @if (reserveConfirmation()?.productId === product.id) {
+        <p class="reserve-confirmation">✓ {{ reserveConfirmation()?.message }}</p>
+      }
+    </div>
+  }
+}

@@ -1,0 +1,102 @@
+<h1>{{ isEditMode ? 'Editar produto' : 'Novo produto' }}</h1>
+
+@if (errorMessage()) {
+  <div class="error-banner">{{ errorMessage() }}</div>
+}
+
+@if (loadingProduct()) {
+  <p>Carregando…</p>
+} @else {
+  @if (!isEditMode) {
+    <div class="field barcode-lookup">
+      <label for="barcode">Código de barras (opcional)</label>
+      <div class="barcode-row">
+        <input id="barcode" name="barcode" type="text" inputmode="numeric" [(ngModel)]="barcode" />
+        <button type="button" class="btn-secondary lookup-btn" [disabled]="lookingUp() || !barcode.trim()" (click)="lookupBarcode()">
+          {{ lookingUp() ? 'Buscando…' : 'Buscar' }}
+        </button>
+      </div>
+      @if (lookupMessage()) {
+        <span class="hint">{{ lookupMessage() }}</span>
+      }
+    </div>
+  }
+
+  <form (ngSubmit)="submit()">
+    <div class="field">
+      <label for="name">Nome *</label>
+      <input id="name" name="name" type="text" [(ngModel)]="name" required />
+    </div>
+    <div class="field">
+      <label for="brand">Marca</label>
+      <input id="brand" name="brand" type="text" [(ngModel)]="brand" />
+    </div>
+    <div class="field">
+      <label for="category">Categoria</label>
+      <select id="category" name="category" [(ngModel)]="categorySelection">
+        @for (option of categories; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+      @if (categorySelection === 'Outro') {
+        <input
+          id="categoryOther"
+          name="categoryOther"
+          type="text"
+          placeholder="Qual categoria?"
+          [(ngModel)]="categoryOther"
+          class="category-other"
+        />
+      }
+    </div>
+    <div class="field">
+      <label for="imageUrl">URL da imagem</label>
+      <input
+        id="imageUrl"
+        name="imageUrl"
+        type="url"
+        placeholder="https://..."
+        [(ngModel)]="imageUrl"
+        (ngModelChange)="imagePreviewFailed = false"
+      />
+      <span class="hint">
+        Por enquanto, cole o link de uma imagem já hospedada em algum lugar (ex: preenchido
+        automaticamente pela busca por código de barras). Upload de fotos direto pelo app ainda não existe —
+        ver docs/decisions/ADR-006-image-storage.md.
+      </span>
+      @if (imageUrl.trim() && !imagePreviewFailed) {
+        <img [src]="imageUrl" alt="Pré-visualização da imagem do produto" class="image-preview" (error)="imagePreviewFailed = true" />
+      }
+    </div>
+
+    @if (!isEditMode) {
+      <div class="field">
+        <label for="quantity">Quantidade em estoque</label>
+        <input id="quantity" name="quantity" type="number" min="0" [(ngModel)]="initialQuantity" />
+      </div>
+    } @else {
+      <div class="field">
+        <label>
+          <input type="checkbox" name="isActive" [(ngModel)]="isActive" style="width:auto" />
+          Produto ativo
+        </label>
+      </div>
+    }
+
+    <button type="submit" class="btn-primary" [disabled]="saving()">
+      {{ saving() ? 'Salvando…' : 'Salvar' }}
+    </button>
+  </form>
+
+  @if (isEditMode && productId) {
+    <hr />
+    <app-stock-movements-panel
+      [networkId]="networkId"
+      [productId]="productId"
+      [onHandQuantity]="onHandQuantity"
+      [reservedQuantity]="reservedQuantity"
+      [availableQuantity]="availableQuantity"
+      (quantitiesChanged)="onQuantitiesChanged($event)"
+    />
+  }
+}

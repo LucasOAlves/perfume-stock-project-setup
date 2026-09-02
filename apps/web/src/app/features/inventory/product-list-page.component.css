@@ -1,0 +1,72 @@
+.owner-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.owner-actions .btn-secondary {
+  width: 100%;
+  font-size: 0.9rem;
+  padding: 0.75rem 0.5rem;
+}
+.invite-card code {
+  display: block;
+  word-break: break-all;
+  font-size: 0.95rem;
+  margin-top: 0.4rem;
+}
+.product-card.inactive {
+  opacity: 0.55;
+}
+.product-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.product-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.brand {
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+.product-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+  white-space: nowrap;
+  padding-top: 0.15rem;
+}
+.availability-badge {
+  white-space: nowrap;
+}
+.edit-link {
+  font-size: 0.85rem;
+  color: var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.reserve-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+.reserve-qty {
+  width: 4.5rem;
+  flex: none;
+}
+.reserve-btn {
+  width: auto;
+  flex: 1;
+}
+.reserve-confirmation {
+  margin: 0.5rem 0 0;
+  color: var(--color-success);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

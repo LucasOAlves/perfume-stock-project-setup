@@ -1,0 +1,248 @@
+/* Design tokens — light palette is the default on bare :root. Dark palette is applied
+   two ways: automatically via prefers-color-scheme (when the user hasn't chosen
+   explicitly) and via [data-theme="dark"]/[data-theme="light"] (when they have, through
+   the in-app toggle — see core/theme.service.ts). Every color used anywhere in the app
+   goes through one of these tokens so both themes stay consistent without hunting down
+   hardcoded hex values component by component. */
+:root {
+  --color-primary: #6d3aa0;
+  --color-primary-hover: #5a2f85;
+  --color-primary-contrast: #ffffff;
+  --color-primary-soft-bg: #f2e8fb;
+  --color-primary-soft-text: #6a37a8;
+
+  --color-success: #16833f;
+  --color-success-soft-bg: #e3f8ea;
+  --color-warning: #a6620a;
+  --color-warning-soft-bg: #fdf1dc;
+  --color-danger: #c22f45;
+  --color-danger-soft-bg: #fbe6ea;
+  --color-danger-soft-border: #f3c6cd;
+
+  --color-text: #241a2c;
+  --color-muted: #78697f;
+  --color-border: #e6dfeb;
+  --color-surface: #ffffff;
+  --color-background: #faf8fb;
+}
+
+/* Follows the phone/OS setting automatically, unless the user picked a theme explicitly
+   in-app (data-theme="light" then wins even in a dark OS). */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-primary: #c9a3f0;
+    --color-primary-hover: #d9bdf5;
+    --color-primary-contrast: #1c1322;
+    --color-primary-soft-bg: #3a2a4d;
+    --color-primary-soft-text: #dcc5f5;
+
+    --color-success: #4fd17c;
+    --color-success-soft-bg: #163a26;
+    --color-warning: #f0ad4e;
+    --color-warning-soft-bg: #3d2c10;
+    --color-danger: #f0798a;
+    --color-danger-soft-bg: #3d1c22;
+    --color-danger-soft-border: #5c2c34;
+
+    --color-text: #f2ecf5;
+    --color-muted: #ab9bb2;
+    --color-border: #392c41;
+    --color-surface: #221a29;
+    --color-background: #17121c;
+  }
+}
+
+/* The explicit in-app toggle always wins over the OS setting, in both directions. */
+:root[data-theme='dark'] {
+  --color-primary: #c9a3f0;
+  --color-primary-hover: #d9bdf5;
+  --color-primary-contrast: #1c1322;
+  --color-primary-soft-bg: #3a2a4d;
+  --color-primary-soft-text: #dcc5f5;
+
+  --color-success: #4fd17c;
+  --color-success-soft-bg: #163a26;
+  --color-warning: #f0ad4e;
+  --color-warning-soft-bg: #3d2c10;
+  --color-danger: #f0798a;
+  --color-danger-soft-bg: #3d1c22;
+  --color-danger-soft-border: #5c2c34;
+
+  --color-text: #f2ecf5;
+  --color-muted: #ab9bb2;
+  --color-border: #392c41;
+  --color-surface: #221a29;
+  --color-background: #17121c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--color-background);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.5rem;
+}
+
+p {
+  margin: 0 0 0.75rem;
+  color: var(--color-muted);
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+input:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+/* Shared base for real <button> elements AND <a> links styled as buttons — without
+   this, an anchor carrying .btn-primary/.btn-secondary only picked up color/border
+   from those classes and silently lost font-weight/padding/min-height/cursor, making
+   button-shaped links look visibly thinner and lighter than real buttons next to them. */
+button,
+a.btn-primary,
+a.btn-secondary {
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: 8px;
+  border: none;
+  padding: 0.85rem 1rem;
+  min-height: 44px; /* mobile touch target */
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  width: 100%;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--color-primary-soft-bg);
+}
+
+.link-button {
+  background: transparent;
+  color: var(--color-primary);
+  padding: 0.25rem 0;
+  min-height: auto;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.error-banner {
+  background: var(--color-danger-soft-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-soft-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--color-muted);
+}
+
+.availability-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.availability-badge.available {
+  background: var(--color-success-soft-bg);
+  color: var(--color-success);
+}
+
+.availability-badge.low {
+  background: var(--color-warning-soft-bg);
+  color: var(--color-warning);
+}
+
+.availability-badge.unavailable {
+  background: var(--color-danger-soft-bg);
+  color: var(--color-danger);
+}
+
+/* Reusable "pill" tag — used for the network Owner badge next to a member's name. */
+.tag {
+  font-size: 0.75rem;
+  background: var(--color-primary-soft-bg);
+  color: var(--color-primary-soft-text);
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+}

@@ -1,0 +1,96 @@
+<h2>Estoque</h2>
+<p class="quantities">
+  <strong>{{ onHandQuantity }}</strong> em mãos ·
+  <strong>{{ availableQuantity }}</strong> disponíveis
+  @if (reservedQuantity > 0) {
+    · {{ reservedQuantity }} reservados
+  }
+</p>
+
+@if (errorMessage()) {
+  <div class="error-banner">{{ errorMessage() }}</div>
+}
+
+<form (ngSubmit)="submitMovement()" class="movement-form">
+  <div class="field">
+    <label for="movementType">Tipo</label>
+    <select id="movementType" name="movementType" [(ngModel)]="movementType">
+      <option value="RESTOCK">Reposição (entrada)</option>
+      <option value="ADJUSTMENT_LOSS">Perda / avaria (saída)</option>
+      <option value="ADJUSTMENT_CORRECTION">Correção de contagem</option>
+      <option value="RETURN">Devolução (entrada)</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="movementQuantity">Quantidade</label>
+    <input
+      id="movementQuantity"
+      name="movementQuantity"
+      type="number"
+      [(ngModel)]="quantity"
+      [attr.min]="movementType === 'ADJUSTMENT_CORRECTION' ? null : 1"
+    />
+    <span class="hint">{{ quantityHint() }}</span>
+  </div>
+  <div class="field">
+    <label for="movementReason">Motivo *</label>
+    <input id="movementReason" name="movementReason" type="text" [(ngModel)]="reason" required />
+  </div>
+  <button type="submit" class="btn-secondary" [disabled]="saving()">
+    {{ saving() ? 'Registrando…' : 'Registrar mudança de estoque' }}
+  </button>
+</form>
+
+<h3>Reservas ativas</h3>
+@if (loadingReservations()) {
+  <p>Carregando…</p>
+} @else if (reservationsForbidden()) {
+  <p class="empty-state">Você não tem permissão para ver as reservas deste produto.</p>
+} @else if (activeReservations().length === 0) {
+  <p class="empty-state">Nenhuma reserva ativa no momento.</p>
+} @else {
+  @for (reservation of activeReservations(); track reservation.id) {
+    <div class="card reservation-row">
+      <strong>{{ reservation.quantity }} unidade(s)</strong>
+      <div class="reservation-actions">
+        <button
+          type="button"
+          class="btn-secondary small"
+          [disabled]="busyReservationId() === reservation.id"
+          (click)="fulfill(reservation)"
+        >
+          Confirmar venda
+        </button>
+        <button
+          type="button"
+          class="btn-secondary small"
+          [disabled]="busyReservationId() === reservation.id"
+          (click)="cancelReservation(reservation)"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  }
+}
+
+<h3>Histórico</h3>
+@if (loadingHistory()) {
+  <p>Carregando…</p>
+} @else if (historyForbidden()) {
+  <p class="empty-state">Você não tem permissão para ver o histórico deste produto.</p>
+} @else if (movements().length === 0) {
+  <p class="empty-state">Nenhuma movimentação registrada ainda.</p>
+} @else {
+  @for (movement of movements(); track movement.id) {
+    <div class="card movement-row">
+      <div>
+        <strong>{{ movementLabel(movement.type) }}</strong>
+        <span class="movement-reason">{{ movement.reason }}</span>
+      </div>
+      <span [class.positive]="movement.quantityDelta > 0" [class.negative]="movement.quantityDelta < 0">
+        {{ movement.quantityDelta > 0 ? '+' : '' }}{{ movement.quantityDelta }}
+      </span>
+    </div>
+  }
+}

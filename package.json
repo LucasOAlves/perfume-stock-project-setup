@@ -1,0 +1,18 @@
+{
+  "name": "shared-stock",
+  "private": true,
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run start -w apps/web",
+    "build:api": "npm run build -w apps/api",
+    "build:web": "npm run build -w apps/web",
+    "test:api": "npm run test -w apps/api",
+    "migration:run": "npm run migration:run -w apps/api",
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose down"
+  }
+}
