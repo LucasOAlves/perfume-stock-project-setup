@@ -1,0 +1,14 @@
+{
+  "printWidth": 120,
+  "singleQuote": false,
+  "semi": true,
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": "apps/web/**/*.{ts,html,css}",
+      "options": {
+        "singleQuote": true
+      }
+    }
+  ]
+}

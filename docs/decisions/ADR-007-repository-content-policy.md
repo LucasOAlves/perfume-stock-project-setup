@@ -1,11 +1,12 @@
 # ADR-007 — What Goes Into Version Control (Public Repository Content Policy)
 
 ## Status
+
 Accepted
 
 ## Context
 
-The repository is about to get its first `git init` and initial commit, with the explicit expectation that it may become (or already is intended to be treated as) a **public** repository. Before that first commit, everything in the working tree needs a clear yes/no on whether it belongs in version control — most urgently credentials and local environment config, but the user specifically also flagged uncertainty about two categories that are *not* obviously secrets: ADRs and the rest of `docs/`.
+The repository is about to get its first `git init` and initial commit, with the explicit expectation that it may become (or already is intended to be treated as) a **public** repository. Before that first commit, everything in the working tree needs a clear yes/no on whether it belongs in version control — most urgently credentials and local environment config, but the user specifically also flagged uncertainty about two categories that are _not_ obviously secrets: ADRs and the rest of `docs/`.
 
 ## Decision Drivers
 
@@ -16,13 +17,15 @@ The repository is about to get its first `git init` and initial commit, with the
 ## Decision
 
 **Commit:**
+
 - All application source code (`apps/api/src`, `apps/web/src`), migrations, tests, and configuration templates (`.env.example`).
-- All of `docs/` — product spec, domain model, system design, security model, ADRs (including this one), vertical-slice plans, learnings, and research reports (catalog providers, image storage). **None of this is a secret.** It's reasoning and documentation, not credentials or user data. Security-relevant content in `docs/architecture/security-model.md` (rate limits, the shape of the auth flow, capability names) is exactly the kind of thing that's already knowable from the source code sitting right next to it in the same public repo — documenting it doesn't create new exposure, and *not* documenting it would just make the codebase harder to review, including by the security-conscious readers a public repo attracts.
+- All of `docs/` — product spec, domain model, system design, security model, ADRs (including this one), vertical-slice plans, learnings, and research reports (catalog providers, image storage). **None of this is a secret.** It's reasoning and documentation, not credentials or user data. Security-relevant content in `docs/architecture/security-model.md` (rate limits, the shape of the auth flow, capability names) is exactly the kind of thing that's already knowable from the source code sitting right next to it in the same public repo — documenting it doesn't create new exposure, and _not_ documenting it would just make the codebase harder to review, including by the security-conscious readers a public repo attracts.
 - `.agents/` and `MASTER_PROMPT.md` — the specialist briefs and process that produced every decision under `docs/`. Excluding these while keeping their output (`docs/`) would make the docs harder to trust/audit, not easier.
 - `package.json` / `package-lock.json` (both root and per-app) — needed for anyone (including a future agent) to reproduce the exact dependency tree.
 - `docker-compose.yml` — uses placeholder dev-only credentials (`shared_stock`/`shared_stock`), not anything real; matches `.env.example`.
 
 **Never commit (enforced via `.gitignore`):**
+
 - `.env` (and `.env.local`) — real local credentials: this repo's `apps/api/.env` currently holds a real local PostgreSQL password and a session-signing secret. `.env.example` (checked in) carries only placeholders and is what a new clone is supposed to copy and fill in — see the README's setup steps.
 - `node_modules/`, `dist/`, `build/`, `coverage/`, `.angular/` — reproducible from source + lockfile; committing them bloats history for no benefit and risks accidentally shipping a stale/locally-patched build.
 - `.claude/settings.local.json` — personal Claude Code tool permissions, machine-specific, not portable. (A non-`local` `.claude/settings.json`, if one is ever added for genuinely shared team config, would be fine to commit — the `local` suffix is what marks a file as personal.)
@@ -38,8 +41,8 @@ The repository is about to get its first `git init` and initial commit, with the
 
 ## Security/Operational Impact
 
-Before *every* commit — not just this first one — run `git status` (and `git diff --cached` for anything unexpected) and specifically check for: any `.env` file, any file with a real password/token/API key pasted in literally, any real user phone number or personal data from manual testing. This first commit was preceded by exactly that check. Repeat it every time — don't assume `.gitignore` alone is a sufficient net for a mistake made *inside* a tracked file.
+Before _every_ commit — not just this first one — run `git status` (and `git diff --cached` for anything unexpected) and specifically check for: any `.env` file, any file with a real password/token/API key pasted in literally, any real user phone number or personal data from manual testing. This first commit was preceded by exactly that check. Repeat it every time — don't assume `.gitignore` alone is a sufficient net for a mistake made _inside_ a tracked file.
 
 ## Revisit When
 
-The repository's visibility changes (public → private or vice versa) — a private repo could reasonably relax some of this (e.g., committing a `.env.local` with shared team dev credentials might become reasonable), but nothing here should get *stricter* by going private, only potentially more permissive, and only deliberately, not by default.
+The repository's visibility changes (public → private or vice versa) — a private repo could reasonably relax some of this (e.g., committing a `.env.local` with shared team dev credentials might become reasonable), but nothing here should get _stricter_ by going private, only potentially more permissive, and only deliberately, not by default.

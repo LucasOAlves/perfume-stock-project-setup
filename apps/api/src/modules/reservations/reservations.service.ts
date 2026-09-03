@@ -23,10 +23,7 @@ export async function sweepExpiredReservations(manager: EntityManager, product: 
   if (expired.length === 0) return;
 
   const releasedQuantity = expired.reduce((sum, r) => sum + r.quantity, 0);
-  await reservations.update(
-    { id: In(expired.map((r) => r.id)) },
-    { status: "expired" }
-  );
+  await reservations.update({ id: In(expired.map((r) => r.id)) }, { status: "expired" });
   product.reservedQuantity -= releasedQuantity;
 }
 
@@ -147,7 +144,9 @@ export class ReservationsService {
         return toDto(fresh); // idempotent replay
       }
       if (fresh.status !== "active") {
-        throw new ConflictError(`A reserva já está ${RESERVATION_STATUS_LABELS[fresh.status]} e não pode ser cancelada`);
+        throw new ConflictError(
+          `A reserva já está ${RESERVATION_STATUS_LABELS[fresh.status]} e não pode ser cancelada`
+        );
       }
 
       fresh.status = "cancelled";

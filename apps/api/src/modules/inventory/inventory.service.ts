@@ -1,6 +1,10 @@
 import { DataSource } from "typeorm";
 import { ProductEntity } from "../catalog/entities/product.entity";
-import { STOCK_MOVEMENT_TYPE_LABELS, StockMovementEntity, type StockMovementType } from "./entities/stock-movement.entity";
+import {
+  STOCK_MOVEMENT_TYPE_LABELS,
+  StockMovementEntity,
+  type StockMovementType
+} from "./entities/stock-movement.entity";
 import { RESERVATION_STATUS_LABELS, ReservationEntity } from "../reservations/entities/reservation.entity";
 import { sweepExpiredReservations } from "../reservations/reservations.service";
 import { requireCapability } from "../../shared/membership-guard";
@@ -19,7 +23,9 @@ function validateDeltaSign(type: StockMovementType, quantityDelta: number): void
     throw new ValidationError("A variação de quantidade não pode ser zero");
   }
   if ((type === "RESTOCK" || type === "RETURN") && quantityDelta < 0) {
-    throw new ValidationError(`${STOCK_MOVEMENT_TYPE_LABELS[type]} deve aumentar o estoque (use uma quantidade positiva)`);
+    throw new ValidationError(
+      `${STOCK_MOVEMENT_TYPE_LABELS[type]} deve aumentar o estoque (use uma quantidade positiva)`
+    );
   }
   if (type === "ADJUSTMENT_LOSS" && quantityDelta > 0) {
     throw new ValidationError(

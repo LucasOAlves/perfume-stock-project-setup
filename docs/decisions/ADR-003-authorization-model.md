@@ -1,6 +1,7 @@
 # ADR-003 — Authorization Model: Capability List per Membership, Owner-Exclusive Membership/Permission Management
 
 ## Status
+
 Accepted
 
 ## Context

@@ -1,6 +1,7 @@
 # ADR-005 — Catalog Enrichment Provider: Open Beauty Facts, Opt-In, Suggestion-Only
 
 ## Status
+
 Accepted
 
 ## Context
@@ -24,6 +25,7 @@ Accepted
 **Open Beauty Facts**, wired behind the existing `CatalogProvider` interface, **disabled by default** (`CATALOG_PROVIDER=none`) and opt-in via an environment variable (`CATALOG_PROVIDER=openbeautyfacts`). Cosmos is not implemented — it's a real, documented option worth adding later if a network's Owner has a Cosmos API key and wants better coverage, but there's no reason to build and maintain a second adapter for an MVP feature whose own research report says coverage of these specific products is unverified either way.
 
 Implementation constraints (`apps/api/src/modules/catalog/catalog-provider.ts`):
+
 - One lookup call per explicit user action (a barcode entered into the create-product form), never a batch or background job — matches Open Beauty Facts' stated usage policy.
 - A 5-second timeout and a broad try/catch around the network call — any failure (timeout, 4xx/5xx, malformed JSON) returns `null`, never throws, so a provider outage can never block manual product creation.
 - Response fields are sanitized before being returned to the client: text fields are stripped of control characters and length-capped; the image URL is parsed and only ever returned if its protocol is `https:`. Nothing from the provider response is trusted or passed through unsanitized (`docs/architecture/security-model.md` "External Integrations").

@@ -74,13 +74,23 @@ Create an ADR when there are meaningful alternatives, material architectural imp
 ## Output
 
 ### Context
+
 ### Constraints
+
 ### Clean Architecture Evaluation
+
 ### Proposed Architecture
+
 ### Boundaries
+
 ### Data/Transaction Strategy
+
 ### Authorization Strategy
+
 ### Tradeoffs
+
 ### Risks
+
 ### Recommendation
+
 ### ADRs Needed

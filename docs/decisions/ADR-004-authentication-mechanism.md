@@ -1,6 +1,7 @@
 # ADR-004 — Authentication: Phone + OTP, httpOnly Session Cookie
 
 ## Status
+
 Accepted
 
 ## Context

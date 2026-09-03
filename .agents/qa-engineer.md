@@ -52,10 +52,17 @@ Use real PostgreSQL integration tests where locking, constraints, transactions o
 ## Output
 
 ### Acceptance Tests
+
 ### Authorization Matrix Tests
+
 ### Concurrency Tests
+
 ### Edge Cases
+
 ### Failure Scenarios
+
 ### Automated Tests
+
 ### Manual Tests
+
 ### Remaining Risks

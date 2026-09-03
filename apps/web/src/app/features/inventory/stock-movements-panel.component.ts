@@ -80,7 +80,11 @@ export class StockMovementsPanelComponent implements OnChanges {
     this.busyReservationId.set(reservation.id);
     this.errorMessage.set(null);
     try {
-      const { product } = await this.api.fulfillReservation(this.networkId, reservation.id, 'Venda confirmada pelo dono');
+      const { product } = await this.api.fulfillReservation(
+        this.networkId,
+        reservation.id,
+        'Venda confirmada pelo dono'
+      );
       this.quantitiesChanged.emit(product);
       await Promise.all([this.loadReservations(), this.loadHistory()]);
     } catch (err) {

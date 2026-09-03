@@ -24,7 +24,8 @@ export interface Product {
   availableQuantity: number;
 }
 
-export type StockMovementType = 'RESTOCK' | 'ADJUSTMENT_LOSS' | 'ADJUSTMENT_CORRECTION' | 'RETURN' | 'SALE_FROM_RESERVATION';
+export type StockMovementType =
+  'RESTOCK' | 'ADJUSTMENT_LOSS' | 'ADJUSTMENT_CORRECTION' | 'RETURN' | 'SALE_FROM_RESERVATION';
 
 export interface StockMovement {
   id: string;

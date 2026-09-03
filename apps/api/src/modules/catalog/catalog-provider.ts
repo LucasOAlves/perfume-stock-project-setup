@@ -59,6 +59,9 @@ export class OpenBeautyFactsCatalogProvider implements CatalogProvider {
   }
 }
 
+// Matching control characters is the intended behavior here (see comment below), not the
+// footgun no-control-regex normally flags.
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS_PATTERN = new RegExp("[\\u0000-\\u001F\\u007F]", "g");
 
 // Untrusted external input: cap length, strip control characters, never pass through

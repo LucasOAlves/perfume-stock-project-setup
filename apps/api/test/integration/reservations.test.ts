@@ -60,7 +60,13 @@ describe("reservations (Slice 3)", () => {
     return seller;
   }
 
-  function reserve(seller: SignedUpUser, networkId: string, productId: string, quantity: number, idempotencyKey?: string) {
+  function reserve(
+    seller: SignedUpUser,
+    networkId: string,
+    productId: string,
+    quantity: number,
+    idempotencyKey?: string
+  ) {
     return app.inject({
       method: "POST",
       url: `/networks/${networkId}/products/${productId}/reservations`,

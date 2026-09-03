@@ -4,7 +4,7 @@ Status: All five slices implemented and verified (Slices 1–4 against real Post
 
 ## Slice 1 — Identity, Sales Network, Membership, Read-Only Manual Inventory ✅ Implemented
 
-**User value:** An Owner can create a network and invite Sellers; every member can see real product availability. This alone already replaces the phone call for the *read* side of the problem.
+**User value:** An Owner can create a network and invite Sellers; every member can see real product availability. This alone already replaces the phone call for the _read_ side of the problem.
 
 **Scope:** Phone+OTP auth and session (ADR-004); Sales Network creation; Owner-issued single-use expiring invite links; invite consumption creates a Membership with default capabilities; manual Product CRUD (Owner/`product.manage` only — Owner-only in Slice 1 since delegation doesn't exist yet); product search/list showing `available_quantity` (= `on_hand_quantity` since no reservations exist yet) to every Membership; basic Owner-only screen to set initial `on_hand_quantity` at product creation (not yet a full movement history — that's Slice 2).
 
@@ -88,7 +88,7 @@ Status: All five slices implemented and verified (Slices 1–4 against real Post
 
 **Status:** Conditional on `docs/research/product-catalog-sources.md`. Findings: no official API exists for the target Brazilian direct-sales brands (Natura, Avon, O Boticário, Eudora) — all classified UNSUITABLE for direct integration. Generic GTIN sources (Cosmos/Bluesoft — paid, data-accuracy disclaimed by the vendor itself; Open Beauty Facts — free but crowdsourced with unverified coverage of these specific products) are recommended only as optional, human-reviewed enrichment, never as an unattended import.
 
-**Scope if pursued:** `CatalogProvider` adapter (behind the interface established in ADR-001/system-design) that looks up a scanned barcode and *pre-fills* a product-creation form for the Owner to review and confirm — never auto-creates or auto-updates a Product without a human confirming the fields. Manual entry remains fully functional with the adapter absent, disabled, or failing.
+**Scope if pursued:** `CatalogProvider` adapter (behind the interface established in ADR-001/system-design) that looks up a scanned barcode and _pre-fills_ a product-creation form for the Owner to review and confirm — never auto-creates or auto-updates a Product without a human confirming the fields. Manual entry remains fully functional with the adapter absent, disabled, or failing.
 
 **Out of scope:** Any brand-specific integration; any unattended write path from a provider into the product catalog; scraping of any kind.
 

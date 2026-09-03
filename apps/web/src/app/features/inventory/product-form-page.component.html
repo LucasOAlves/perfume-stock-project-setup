@@ -12,7 +12,12 @@
       <label for="barcode">Código de barras (opcional)</label>
       <div class="barcode-row">
         <input id="barcode" name="barcode" type="text" inputmode="numeric" [(ngModel)]="barcode" />
-        <button type="button" class="btn-secondary lookup-btn" [disabled]="lookingUp() || !barcode.trim()" (click)="lookupBarcode()">
+        <button
+          type="button"
+          class="btn-secondary lookup-btn"
+          [disabled]="lookingUp() || !barcode.trim()"
+          (click)="lookupBarcode()"
+        >
           {{ lookingUp() ? 'Buscando…' : 'Buscar' }}
         </button>
       </div>
@@ -60,12 +65,17 @@
         (ngModelChange)="imagePreviewFailed = false"
       />
       <span class="hint">
-        Por enquanto, cole o link de uma imagem já hospedada em algum lugar (ex: preenchido
-        automaticamente pela busca por código de barras). Upload de fotos direto pelo app ainda não existe —
-        ver docs/decisions/ADR-006-image-storage.md.
+        Por enquanto, cole o link de uma imagem já hospedada em algum lugar (ex: preenchido automaticamente pela busca
+        por código de barras). Upload de fotos direto pelo app ainda não existe — ver
+        docs/decisions/ADR-006-image-storage.md.
       </span>
       @if (imageUrl.trim() && !imagePreviewFailed) {
-        <img [src]="imageUrl" alt="Pré-visualização da imagem do produto" class="image-preview" (error)="imagePreviewFailed = true" />
+        <img
+          [src]="imageUrl"
+          alt="Pré-visualização da imagem do produto"
+          class="image-preview"
+          (error)="imagePreviewFailed = true"
+        />
       }
     </div>
 
@@ -77,7 +87,7 @@
     } @else {
       <div class="field">
         <label>
-          <input type="checkbox" name="isActive" [(ngModel)]="isActive" style="width:auto" />
+          <input type="checkbox" name="isActive" [(ngModel)]="isActive" style="width: auto" />
           Produto ativo
         </label>
       </div>

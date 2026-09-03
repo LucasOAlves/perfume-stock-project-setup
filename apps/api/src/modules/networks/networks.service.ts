@@ -98,14 +98,18 @@ export class NetworksService {
 
       const capabilities = manager.getRepository(MembershipCapabilityEntity);
       await capabilities.save(
-        DEFAULT_MEMBER_CAPABILITIES.map((capability) => capabilities.create({ membershipId: membership.id, capability }))
+        DEFAULT_MEMBER_CAPABILITIES.map((capability) =>
+          capabilities.create({ membershipId: membership.id, capability })
+        )
       );
 
       invite.usedAt = new Date();
       invite.usedByUserId = userId;
       await invites.save(invite);
 
-      const network = await manager.getRepository(SalesNetworkEntity).findOneOrFail({ where: { id: invite.networkId } });
+      const network = await manager
+        .getRepository(SalesNetworkEntity)
+        .findOneOrFail({ where: { id: invite.networkId } });
       return network;
     });
   }
@@ -166,7 +170,9 @@ export class NetworksService {
       const capabilityRows = manager.getRepository(MembershipCapabilityEntity);
       await capabilityRows.delete({ membershipId: target.id });
       if (unique.length > 0) {
-        await capabilityRows.save(unique.map((capability) => capabilityRows.create({ membershipId: target.id, capability })));
+        await capabilityRows.save(
+          unique.map((capability) => capabilityRows.create({ membershipId: target.id, capability }))
+        );
       }
       return unique;
     });
@@ -182,7 +188,9 @@ export class NetworksService {
       throw new NotFoundError("Membro não encontrado");
     }
     if (membership.isOwner) {
-      throw new ValidationError("As permissões do dono da rede não podem ser alteradas — ele sempre tem acesso completo");
+      throw new ValidationError(
+        "As permissões do dono da rede não podem ser alteradas — ele sempre tem acesso completo"
+      );
     }
     return membership;
   }

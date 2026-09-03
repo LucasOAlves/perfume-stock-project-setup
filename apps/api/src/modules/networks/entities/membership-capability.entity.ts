@@ -1,4 +1,4 @@
-import { Column, Entity, Index, PrimaryColumn } from "typeorm";
+import { Entity, Index, PrimaryColumn } from "typeorm";
 import type { Capability } from "./capability";
 
 @Entity({ name: "membership_capabilities" })

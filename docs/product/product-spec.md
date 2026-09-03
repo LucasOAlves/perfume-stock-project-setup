@@ -4,7 +4,7 @@ Status: draft, post-discovery. Owner: Product Manager agent. Revisit whenever MV
 
 ## Product Naming
 
-**User-facing product name: "Estoque Vivo"** ("live/current stock"). The target users are Brazilian resellers running the app entirely in Portuguese, and the product's whole value proposition is that the availability shown is *live* — not a stale number someone has to double-check by phone. "Estoque Vivo" says that in the name itself: plain language (no RBAC/ERP jargon, matches the terminology rules below), and it directly encodes the core product outcome from "Core Product Outcome" above. Chosen over more literal options ("Estoque Compartilhado" — accurate but reads as a bureaucratic label, doesn't carry the trust/liveness promise) and over brand-first options disconnected from the domain ("Giro Certo" — catchy but about turnover, not about the specific "is this real right now" problem this product solves).
+**User-facing product name: "Estoque Vivo"** ("live/current stock"). The target users are Brazilian resellers running the app entirely in Portuguese, and the product's whole value proposition is that the availability shown is _live_ — not a stale number someone has to double-check by phone. "Estoque Vivo" says that in the name itself: plain language (no RBAC/ERP jargon, matches the terminology rules below), and it directly encodes the core product outcome from "Core Product Outcome" above. Chosen over more literal options ("Estoque Compartilhado" — accurate but reads as a bureaucratic label, doesn't carry the trust/liveness promise) and over brand-first options disconnected from the domain ("Giro Certo" — catchy but about turnover, not about the specific "is this real right now" problem this product solves).
 
 **"Shared Stock" remains the internal engineering codename** — repo name, npm package names (`@shared-stock/api`), database names (`shared_stock`), and every doc under `docs/`, `.agents/`, and `MASTER_PROMPT.md`. It never appears anywhere a real user can see it (`apps/web/src/index.html`'s `<title>`, the app header brand, and every user-facing string are "Estoque Vivo" / Portuguese). Splitting these deliberately avoids a large, low-value rename across the whole engineering surface (repo folder name, package.json names, database names, every ADR reference) for a decision that only needs to be visible in the product itself. Revisit only if the engineering codename genuinely starts causing confusion (e.g. onboarding a new contributor who only ever sees the app).
 
@@ -21,7 +21,7 @@ An Associated Seller cannot reliably know whether a ready-to-deliver item is sti
 
 ## Job to Be Done
 
-*"When a customer asks if I can deliver a product now, I want to check trustworthy shared availability myself, so I can promise it confidently without contacting the stock owner."*
+_"When a customer asks if I can deliver a product now, I want to check trustworthy shared availability myself, so I can promise it confidently without contacting the stock owner."_
 
 ## Product Outcome
 
@@ -51,15 +51,15 @@ Checkout, customer CRM, invoicing/fiscal documents, payment processing, delivery
 
 ## Terminology Decisions
 
-| Term | Decision | Why |
-|---|---|---|
-| Sales Network | Kept | Matches how resellers already describe "minha rede" (their downline of sellers around one stock). Rejected "branch/matrix" per master prompt — implies a franchise hierarchy this product doesn't have. |
-| Owner | Kept over "Administrator" | "Owner" maps to "this is my physical stock," which is the real-world relationship; "Administrator" reads as a software role, not a business identity. |
-| Associated Seller / Seller | Kept | Plain language, no RBAC jargon. |
-| Product | Kept, network-scoped | See domain model — a Product row *is* the stock record for that network (no separate "Stock Item" concept; see Simplifications below). |
-| Reservation | Kept | Clear to sellers already; matches "reservar" in everyday use. |
-| Stock Movement | Kept | Append-only ledger entry; not shown to sellers as "movement," shown in owner-facing history as "stock change." |
-| Capability | Used internally instead of "Permission" | "Permission" is fine in UI copy; internally we model discrete capabilities, not a single role flag — see [ADR-003](../decisions/ADR-003-authorization-model.md). |
+| Term                       | Decision                                | Why                                                                                                                                                                                                     |
+| -------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sales Network              | Kept                                    | Matches how resellers already describe "minha rede" (their downline of sellers around one stock). Rejected "branch/matrix" per master prompt — implies a franchise hierarchy this product doesn't have. |
+| Owner                      | Kept over "Administrator"               | "Owner" maps to "this is my physical stock," which is the real-world relationship; "Administrator" reads as a software role, not a business identity.                                                   |
+| Associated Seller / Seller | Kept                                    | Plain language, no RBAC jargon.                                                                                                                                                                         |
+| Product                    | Kept, network-scoped                    | See domain model — a Product row _is_ the stock record for that network (no separate "Stock Item" concept; see Simplifications below).                                                                  |
+| Reservation                | Kept                                    | Clear to sellers already; matches "reservar" in everyday use.                                                                                                                                           |
+| Stock Movement             | Kept                                    | Append-only ledger entry; not shown to sellers as "movement," shown in owner-facing history as "stock change."                                                                                          |
+| Capability                 | Used internally instead of "Permission" | "Permission" is fine in UI copy; internally we model discrete capabilities, not a single role flag — see [ADR-003](../decisions/ADR-003-authorization-model.md).                                        |
 
 ## Simplification: no separate "Stock Item" entity
 

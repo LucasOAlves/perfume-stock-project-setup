@@ -1,6 +1,7 @@
 {
   "name": "shared-stock",
   "private": true,
+  "type": "module",
   "workspaces": [
     "apps/api",
     "apps/web"
@@ -13,6 +14,18 @@
     "test:api": "npm run test -w apps/api",
     "migration:run": "npm run migration:run -w apps/api",
     "db:up": "docker compose up -d db",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format:check": "prettier --check .",
+    "format:write": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "angular-eslint": "^22.2.0",
+    "eslint": "^10.9.1",
+    "prettier": "^3.9.6",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.69.0"
   }
 }

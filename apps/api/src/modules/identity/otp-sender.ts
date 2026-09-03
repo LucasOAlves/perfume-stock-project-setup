@@ -8,7 +8,6 @@ export interface OtpSender {
 
 export class ConsoleOtpSender implements OtpSender {
   async send(phone: string, code: string): Promise<void> {
-    // eslint-disable-next-line no-console
     console.log(`[dev-otp] OTP for ${maskPhone(phone)}: ${code}`);
   }
 }

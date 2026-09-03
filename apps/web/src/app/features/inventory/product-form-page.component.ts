@@ -155,7 +155,11 @@ export class ProductFormPageComponent implements OnInit {
     }
   }
 
-  onQuantitiesChanged(quantities: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number }): void {
+  onQuantitiesChanged(quantities: {
+    onHandQuantity: number;
+    reservedQuantity: number;
+    availableQuantity: number;
+  }): void {
     this.onHandQuantity = quantities.onHandQuantity;
     this.reservedQuantity = quantities.reservedQuantity;
     this.availableQuantity = quantities.availableQuantity;

@@ -53,9 +53,15 @@ Every inventory, product, reservation and membership operation must have explici
 ## Output
 
 ### Ubiquitous Language
+
 ### Entities / Concepts
+
 ### Invariants
+
 ### State Transitions
+
 ### Permission-sensitive Operations
+
 ### Concurrency Scenarios
+
 ### Open Domain Decisions

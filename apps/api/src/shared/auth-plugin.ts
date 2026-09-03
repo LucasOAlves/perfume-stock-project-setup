@@ -28,7 +28,7 @@ export const authPlugin = fp(async (app: FastifyInstance, opts: AuthPluginOption
   app.decorateRequest("currentUser", undefined);
   app.decorateRequest("currentSessionId", undefined);
 
-  app.addHook("preHandler", async (request: FastifyRequest, reply: FastifyReply) => {
+  app.addHook("preHandler", async (request: FastifyRequest) => {
     const sessionId = request.cookies[SESSION_COOKIE];
     if (!sessionId) return;
 
@@ -53,25 +53,22 @@ export const authPlugin = fp(async (app: FastifyInstance, opts: AuthPluginOption
     return request.currentUser;
   });
 
-  app.decorate(
-    "setSessionCookies",
-    (reply: FastifyReply, sessionId: string, csrfSecret: string, expiresAt: Date) => {
-      reply.setCookie(SESSION_COOKIE, sessionId, {
-        httpOnly: true,
-        secure: opts.isProduction,
-        sameSite: "lax",
-        path: "/",
-        expires: expiresAt
-      });
-      reply.setCookie(CSRF_COOKIE, csrfSecret, {
-        httpOnly: false,
-        secure: opts.isProduction,
-        sameSite: "lax",
-        path: "/",
-        expires: expiresAt
-      });
-    }
-  );
+  app.decorate("setSessionCookies", (reply: FastifyReply, sessionId: string, csrfSecret: string, expiresAt: Date) => {
+    reply.setCookie(SESSION_COOKIE, sessionId, {
+      httpOnly: true,
+      secure: opts.isProduction,
+      sameSite: "lax",
+      path: "/",
+      expires: expiresAt
+    });
+    reply.setCookie(CSRF_COOKIE, csrfSecret, {
+      httpOnly: false,
+      secure: opts.isProduction,
+      sameSite: "lax",
+      path: "/",
+      expires: expiresAt
+    });
+  });
 
   app.decorate("clearSessionCookies", (reply: FastifyReply) => {
     reply.clearCookie(SESSION_COOKIE, { path: "/" });

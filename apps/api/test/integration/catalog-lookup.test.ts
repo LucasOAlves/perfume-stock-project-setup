@@ -24,7 +24,11 @@ describe("catalog lookup (Slice 5)", () => {
   beforeAll(async () => {
     dataSource = await createTestDataSource();
     otpSender = new CapturingOtpSender();
-    const stubProvider = new StubCatalogProvider({ name: "Perfume Encontrado", brand: "Marca X", imageUrl: "https://example.com/a.jpg" });
+    const stubProvider = new StubCatalogProvider({
+      name: "Perfume Encontrado",
+      brand: "Marca X",
+      imageUrl: "https://example.com/a.jpg"
+    });
     app = await buildApp(dataSource, { otpSender, catalogProvider: stubProvider, logger: false });
   });
 

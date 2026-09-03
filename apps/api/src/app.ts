@@ -17,7 +17,11 @@ import { NetworksService } from "./modules/networks/networks.service";
 import { registerNetworksRoutes } from "./modules/networks/networks.routes";
 import { CatalogService } from "./modules/catalog/catalog.service";
 import { registerCatalogRoutes } from "./modules/catalog/catalog.routes";
-import { NoopCatalogProvider, OpenBeautyFactsCatalogProvider, type CatalogProvider } from "./modules/catalog/catalog-provider";
+import {
+  NoopCatalogProvider,
+  OpenBeautyFactsCatalogProvider,
+  type CatalogProvider
+} from "./modules/catalog/catalog-provider";
 import { InventoryService } from "./modules/inventory/inventory.service";
 import { registerInventoryRoutes } from "./modules/inventory/inventory.routes";
 import { ReservationsService } from "./modules/reservations/reservations.service";

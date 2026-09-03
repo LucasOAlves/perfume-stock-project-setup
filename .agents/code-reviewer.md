@@ -44,8 +44,13 @@ Block when there is a realistic correctness, security, data-integrity or maintai
 ## Output
 
 ### Severity
+
 ### Finding
+
 ### Why It Matters
+
 ### Failure Scenario
+
 ### Recommended Change
+
 ### Blocking?

@@ -1,6 +1,7 @@
 # ADR-002 — Reservation Concurrency: Pessimistic Row Locking
 
 ## Status
+
 Accepted
 
 ## Context

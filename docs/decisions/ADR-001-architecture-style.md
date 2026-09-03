@@ -1,6 +1,7 @@
 # ADR-001 — Architecture Style: Modular Monolith over Full Clean Architecture
 
 ## Status
+
 Accepted
 
 ## Context
@@ -28,17 +29,20 @@ The system is a modular monolith candidate: one Angular app, one Node/TypeScript
 **Option 2 — modular monolith with feature modules.** Full Clean Architecture is rejected for this project.
 
 Structure:
+
 - Backend organized into feature modules: `identity`, `networks` (memberships, invites), `catalog` (products), `inventory` (stock movements), `reservations`, `audit`.
 - Each module: thin HTTP controllers (validation + calling one application service, no business logic) → application services (own transaction boundaries, enforce domain invariants and capability checks) → TypeORM repositories/entities (no generic repository wrapper beyond what TypeORM already provides).
 - Dependency inversion (an interface with a swappable adapter) is applied **only** at the two boundaries that are actually volatile: the external catalog provider (`CatalogProvider` interface; MVP ships a manual-entry-only "no import" implementation) and the OTP/SMS delivery provider (`OtpSender` interface).
 - Everywhere else — Postgres via TypeORM — application services depend directly on repositories. Postgres is not going to be swapped, and QA already exercises it directly, so an abstraction here would only add indirection without adding real optionality.
 
 What is **retained** from Clean Architecture, deliberately:
+
 - Business rules and invariants live in application services, never in controllers or in the ORM entities themselves.
 - Transport concerns (HTTP status codes, request/response DTOs) never leak into application services.
 - The two genuinely volatile external integrations are still behind interfaces.
 
 What is **not** adopted:
+
 - A domain model fully independent of persistence types, with mapping layers between them.
 - Repository interfaces for every aggregate purely for theoretical swappability.
 - A dedicated "use case" class per operation with its own DTO/request/response types beyond what the application service method signature already provides.

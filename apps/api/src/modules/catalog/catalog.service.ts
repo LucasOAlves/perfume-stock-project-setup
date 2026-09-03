@@ -40,6 +40,9 @@ export interface ProductWithAvailability {
 }
 
 const MAX_CATEGORY_LENGTH = 60;
+// Matching control characters is the intended behavior here, not the footgun
+// no-control-regex normally flags.
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS_PATTERN = new RegExp("[\\u0000-\\u001F\\u007F]", "g");
 
 // Trims, collapses internal whitespace, strips control characters, and caps length —
@@ -48,11 +51,7 @@ const CONTROL_CHARS_PATTERN = new RegExp("[\\u0000-\\u001F\\u007F]", "g");
 // apps/web/src/app/core/models.ts PRODUCT_CATEGORIES) or the free-text "Outro" fallback.
 // Deliberately does NOT change casing — see resolveCategory() below for why.
 function sanitizeCategoryText(raw: string): string {
-  return raw
-    .replace(CONTROL_CHARS_PATTERN, "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .slice(0, MAX_CATEGORY_LENGTH);
+  return raw.replace(CONTROL_CHARS_PATTERN, "").trim().replace(/\s+/g, " ").slice(0, MAX_CATEGORY_LENGTH);
 }
 
 function toDto(product: ProductEntity): ProductWithAvailability {
@@ -182,11 +181,7 @@ export class CatalogService {
     return toDto(product);
   }
 
-  async listProducts(
-    userId: string,
-    networkId: string,
-    search?: string
-  ): Promise<ProductWithAvailability[]> {
+  async listProducts(userId: string, networkId: string, search?: string): Promise<ProductWithAvailability[]> {
     await resolveMembership(this.dataSource, userId, networkId); // inventory.read is default for every member
 
     const products = this.dataSource.getRepository(ProductEntity);

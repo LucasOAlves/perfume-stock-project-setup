@@ -15,7 +15,12 @@ export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
 // The generic "record a movement" endpoint only accepts these — SALE_FROM_RESERVATION
 // is excluded because it must be created atomically with a reservation state change,
 // never on its own (see inventory.routes.ts / reservations.service.ts).
-export const MANUALLY_RECORDABLE_MOVEMENT_TYPES = ["RESTOCK", "ADJUSTMENT_LOSS", "ADJUSTMENT_CORRECTION", "RETURN"] as const;
+export const MANUALLY_RECORDABLE_MOVEMENT_TYPES = [
+  "RESTOCK",
+  "ADJUSTMENT_LOSS",
+  "ADJUSTMENT_CORRECTION",
+  "RETURN"
+] as const;
 
 // Portuguese labels for error messages shown to real users (inventory.service.ts).
 // Keep in sync with apps/web/src/app/features/inventory/stock-movements-panel.component.ts movementLabel().

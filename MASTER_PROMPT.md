@@ -1,4 +1,5 @@
 # COMPOUND ENGINEERING MASTER PROMPT
+
 ## Shared Perfume Inventory
 
 We are going to build a real shared-inventory product from an almost empty repository.
@@ -573,17 +574,19 @@ Compare Clean Architecture with at least one simpler credible alternative, for e
 Allowed outcomes:
 
 A. Clean Architecture selected.
-   - Document how it is applied pragmatically.
-   - Do not create layers/interfaces with no meaningful boundary.
+
+- Document how it is applied pragmatically.
+- Do not create layers/interfaces with no meaningful boundary.
 
 B. Clean Architecture rejected or partially adopted.
-   - This MUST create an ADR.
-   - The ADR must explain:
-     - why full Clean Architecture is not appropriate;
-     - alternatives considered;
-     - architecture chosen;
-     - which Clean Architecture principles are still retained;
-     - consequences and tradeoffs.
+
+- This MUST create an ADR.
+- The ADR must explain:
+  - why full Clean Architecture is not appropriate;
+  - alternatives considered;
+  - architecture chosen;
+  - which Clean Architecture principles are still retained;
+  - consequences and tradeoffs.
 
 Do not say “Clean Architecture is overkill” without concrete project-specific reasoning.
 
@@ -624,9 +627,11 @@ Boundaries must reflect ownership and behavior.
 Use unless an ADR justifies a change:
 
 ## Language
+
 TypeScript
 
 ## Frontend
+
 Angular
 Angular Router
 Angular forms appropriate to the chosen design
@@ -638,6 +643,7 @@ Do not adopt a large frontend state library by default.
 Evaluate Angular signals/services and local feature state first.
 
 ## Backend
+
 Node.js
 TypeScript
 
@@ -646,6 +652,7 @@ Do not assume Express/Fastify/Nest solely from habit.
 If NestJS is proposed, explicitly evaluate whether its structure helps or duplicates the chosen architecture.
 
 ## Persistence
+
 PostgreSQL
 TypeORM
 TypeORM migrations
@@ -659,6 +666,7 @@ Rules:
 - database constraints should protect important invariants when appropriate.
 
 ## Local environment
+
 Docker Compose where useful.
 
 ---
@@ -1237,21 +1245,37 @@ Each slice must define:
 Present:
 
 ### PRODUCT UNDERSTANDING
+
 ### DOMAIN LANGUAGE
+
 ### MVP SCOPE
+
 ### NON-GOALS
+
 ### DOMAIN INVARIANTS
+
 ### AUTHENTICATION STRATEGY
+
 ### AUTHORIZATION MODEL
+
 ### INVENTORY/RESERVATION SEMANTICS
+
 ### EXTERNAL CATALOG FINDINGS
+
 ### CLEAN ARCHITECTURE EVALUATION
+
 ### CHOSEN ARCHITECTURE
+
 ### ADRS CREATED
+
 ### SECURITY RISKS
+
 ### MVP VERTICAL SLICES
+
 ### AGENTS CONSULTED
+
 ### SKILLS DISCOVERED
+
 ### WHAT THE REPOSITORY KNOWS NOW THAT IT DID NOT KNOW BEFORE
 
 Only after this checkpoint proceed into application scaffolding and implementation, unless the invoking user explicitly asked for planning/discovery artifacts only.

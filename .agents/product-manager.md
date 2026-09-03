@@ -44,9 +44,15 @@ Ask:
 ## Output
 
 ### User Problem
+
 ### Expected Outcome
+
 ### MVP Decision
+
 ### Acceptance Criteria
+
 ### Out of Scope
+
 ### Risks
+
 ### Open Questions

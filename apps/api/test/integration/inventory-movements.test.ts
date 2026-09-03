@@ -152,8 +152,9 @@ describe("stock movements (Slice 2)", () => {
       headers: { cookie: owner.cookies }
     });
     expect(historyRes.statusCode).toBe(200);
-    const movements = (historyRes.json() as { movements: Array<{ type: string; quantityDelta: number; reason: string }> })
-      .movements;
+    const movements = (
+      historyRes.json() as { movements: Array<{ type: string; quantityDelta: number; reason: string }> }
+    ).movements;
     expect(movements).toHaveLength(2);
     expect(movements[0].type).toBe("ADJUSTMENT_LOSS");
     expect(movements[0].quantityDelta).toBe(-2);

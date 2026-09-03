@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Dev-only, non-secret credentials — the same placeholder values already public in
+# docker-compose.yml and apps/api/.env.example (see ADR-007). No real secret is
+# referenced anywhere in this workflow; it never deploys anything.
+env:
+  PGUSER: shared_stock
+  PGPASSWORD: shared_stock
+  PGDATABASE: shared_stock
+  SESSION_COOKIE_SECRET: ci-only-throwaway-secret-not-used-anywhere-real
+
+jobs:
+  api:
+    name: api (typecheck, build, test, lint)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: shared_stock
+          POSTGRES_PASSWORD: shared_stock
+          POSTGRES_DB: shared_stock
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgres://shared_stock:shared_stock@localhost:5432/shared_stock
+      TEST_DATABASE_URL: postgres://shared_stock:shared_stock@localhost:5432/shared_stock_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Mirrors the local setup in README.md exactly — TEST_DATABASE_URL must be a
+      # separate database from DATABASE_URL, even in a throwaway CI container. See
+      # docs/learnings/slice-2-implementation.md for the incident that made this a rule.
+      - name: Create test database
+        run: PGPASSWORD=shared_stock psql -h localhost -U shared_stock -d shared_stock -c "CREATE DATABASE shared_stock_test"
+
+      - name: Run migrations (dev database)
+        run: npm run migration:run
+
+      - name: Run migrations (test database)
+        working-directory: apps/api
+        run: npx typeorm-ts-node-commonjs migration:run -d src/config/data-source.ts
+        env:
+          DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+
+      - name: Typecheck
+        run: npx tsc --noEmit -p apps/api/tsconfig.json
+
+      - name: Build
+        run: npm run build:api
+
+      - name: Test
+        run: npm run test:api
+
+      - name: Lint
+        run: npx eslint apps/api
+
+  web:
+    name: web (lint, build)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        run: npx eslint apps/web
+
+      - name: Build
+        run: npm run build:web

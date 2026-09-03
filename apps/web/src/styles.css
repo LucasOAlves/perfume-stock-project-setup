@@ -90,7 +90,9 @@ body {
   background: var(--color-background);
   color: var(--color-text);
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 h1,
@@ -195,7 +197,9 @@ button:disabled {
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 0.75rem;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .error-banner {

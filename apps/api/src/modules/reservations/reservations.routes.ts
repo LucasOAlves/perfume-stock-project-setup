@@ -23,7 +23,13 @@ export function registerReservationsRoutes(app: FastifyInstance, reservationsSer
     const { quantity } = createReservationSchema.parse(request.body);
     const idempotencyKey = requireIdempotencyKey(request.headers["idempotency-key"]);
 
-    const reservation = await reservationsService.createReservation(user.id, networkId, productId, quantity, idempotencyKey);
+    const reservation = await reservationsService.createReservation(
+      user.id,
+      networkId,
+      productId,
+      quantity,
+      idempotencyKey
+    );
     reply.code(201).send({ reservation });
   });
 

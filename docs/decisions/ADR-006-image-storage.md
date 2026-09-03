@@ -1,11 +1,12 @@
 # ADR-006 — Product Image Storage: Manual URL for MVP, S3-Compatible Bucket Planned
 
 ## Status
+
 Accepted. MVP decision (manual URL entry, no real upload) is implemented. Provider choice for the future real-upload feature is decided below, based on `docs/research/image-storage-providers.md` — not yet implemented (see "For later").
 
 ## Context
 
-Products can already carry an `image_url` (populated automatically by the optional catalog-lookup enrichment — [ADR-005](ADR-005-catalog-provider.md) — or now editable by hand in the product form). There is no image *upload* capability: no file picker, no storage bucket, no CDN. The user asked to plan real image inclusion — evaluating S3-compatible bucket providers, pricing, etc. — but explicitly asked for the current step to stay a "mock": a plannable, cheap, working placeholder now, with the real integration to follow later.
+Products can already carry an `image_url` (populated automatically by the optional catalog-lookup enrichment — [ADR-005](ADR-005-catalog-provider.md) — or now editable by hand in the product form). There is no image _upload_ capability: no file picker, no storage bucket, no CDN. The user asked to plan real image inclusion — evaluating S3-compatible bucket providers, pricing, etc. — but explicitly asked for the current step to stay a "mock": a plannable, cheap, working placeholder now, with the real integration to follow later.
 
 ## Decision Drivers
 
@@ -27,6 +28,7 @@ Products can already carry an `image_url` (populated automatically by the option
 - DigitalOcean Spaces (flat $5/month floor, no Brazil region) and Wasabi (egress "free" only up to a 1:1 ratio to stored volume — the exact ratio this project's "many viewers per photo" pattern is likely to exceed) were both evaluated and rejected as primary for reasons detailed in the research doc. Supabase Storage has a genuine São Paulo region and built-in transforms, but bundles storage/egress into its broader platform pricing and shared quota rather than being a clean, swappable, standalone piece — rejected for coupling the project to a platform dependency it doesn't otherwise need.
 
 Implementation, when this is actually built:
+
 - A `POST .../products/:id/image` (or similar) endpoint issuing a presigned upload URL, so the actual image bytes go straight from the browser to the bucket, never through the API server.
 - An `ImageStorage` interface (mirroring `CatalogProvider`, per ADR-001's boundary pattern) with one real R2 adapter, built against `@aws-sdk/client-s3` (R2's S3-compatible endpoint) so swapping to B2 later is config, not code.
 - Basic validation (file type, max size) before issuing the presigned URL.

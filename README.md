@@ -50,6 +50,19 @@ npm run test:api               # runs unit + integration tests together
 
 The integration suite (`apps/api/test/integration/`) needs `TEST_DATABASE_URL` set to a **separate, migrated** PostgreSQL database — it calls `TRUNCATE` on every app table between tests, and if `TEST_DATABASE_URL` isn't set it silently falls back to `DATABASE_URL` and **wipes your dev data** (this happened once during development; see `docs/learnings/slice-2-implementation.md`). It exercises tenant isolation, invite lifecycle, capability enforcement, OTP rate limiting, stock-movement invariants, reservation concurrency, delegated-permission escalation, and catalog lookup — never against a real external API (see `docs/learnings/slice-5-implementation.md`) — all against real Postgres, per `docs/architecture/security-model.md` and `.agents/qa-engineer.md`. **Verified passing** (44/44) against a real local PostgreSQL instance — see `docs/learnings/` for the real bugs that surfaced only once a live database (and, for Slice 5, a real third-party API) was actually used: a test-parallelism deadlock, an OTP lockout bug, a dev/test database isolation incident, and a UX bug where two 403s sharing one error signal masked each other — all fixed.
 
+## CI
+
+[![CI](https://github.com/LucasOAlves/perfume-stock-project-setup/actions/workflows/ci.yml/badge.svg)](https://github.com/LucasOAlves/perfume-stock-project-setup/actions/workflows/ci.yml)
+
+Every push/PR to `main` runs two jobs — `api` (typecheck, build, the full integration suite against a real `postgres:16-alpine` service container, lint) and `web` (lint, build) — see [ADR-008](docs/decisions/ADR-008-cicd-and-lint-tooling.md) for why GitHub Actions + ESLint/Prettier over the alternatives considered.
+
+```bash
+npm run lint            # ESLint across both workspaces
+npm run lint:fix        # ESLint --fix
+npm run format:check    # Prettier check, no writes
+npm run format:write    # Prettier --write
+```
+
 ## Repository Layout
 
 ```

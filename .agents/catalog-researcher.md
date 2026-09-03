@@ -66,14 +66,23 @@ Flag legal/terms ambiguity rather than pretending it is resolved.
 ## Output
 
 ### Source
+
 ### Classification
+
 ### Evidence
+
 ### Data Available
+
 ### Constraints
+
 ### Reliability
+
 ### Cost
+
 ### Risks
+
 ### Recommendation
+
 ### Confidence
 
 Finish with a comparison and a manual-entry fallback recommendation.

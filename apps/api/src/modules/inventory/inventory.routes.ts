@@ -8,7 +8,10 @@ const reservationParamsSchema = z.object({ networkId: z.string().uuid(), reserva
 
 const recordMovementSchema = z.object({
   type: z.enum(MANUALLY_RECORDABLE_MOVEMENT_TYPES),
-  quantityDelta: z.number().int().refine((n) => n !== 0, "Quantity change cannot be zero"),
+  quantityDelta: z
+    .number()
+    .int()
+    .refine((n) => n !== 0, "Quantity change cannot be zero"),
   reason: z.string().min(1).max(500)
 });
 

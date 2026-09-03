@@ -57,9 +57,15 @@ Never imply success before the backend confirms it.
 ## Output
 
 ### User Flow
+
 ### Screen/State Model
+
 ### Information Hierarchy
+
 ### Interaction Risks
+
 ### Accessibility Considerations
+
 ### Mobile Considerations
+
 ### Simplifications

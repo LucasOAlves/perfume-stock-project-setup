@@ -7,6 +7,7 @@ Status: living convention, not an ADR — file organization is easily reversible
 Angular components in this app default to inline `template`/`styles` in the `@Component` decorator (single `.ts` file), not `templateUrl`/`styleUrls` pointing at separate `.html`/`.css` files. This was an unstated default through Slices 1–5 — worth writing down now that it was flagged in review.
 
 **Why inline by default:**
+
 - Fewer files to navigate for the small, single-purpose components this app is built from (`.agents/angular-frontend-expert.md` — "small feature-focused components").
 - A code review sees markup, styles, and logic together in one diff.
 - No `templateUrl` path to get wrong or leave stale after a rename.

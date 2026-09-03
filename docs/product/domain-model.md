@@ -19,28 +19,35 @@ Status: draft, post-discovery. Owner: Inventory Domain Expert agent. This is the
 ## Entities
 
 ### SalesNetwork
+
 `id, name, created_by (user), created_at`
 
 ### Membership
+
 `id, network_id, user_id, is_owner (bool), status (active|removed), created_at`
 Unique on `(network_id, user_id)`.
 
 ### MembershipCapability
+
 `membership_id, capability (enum)` — join table, not a bitmask, so new capabilities are additive migrations, not a format change.
 
 ### Product
+
 `id, network_id, name, brand, sku, barcode (nullable), category (nullable), image_url (nullable), is_active, on_hand_quantity, reserved_quantity, created_at, updated_at`
 Constraints: `on_hand_quantity >= 0`, `reserved_quantity >= 0`, `reserved_quantity <= on_hand_quantity`.
 
 ### Reservation
+
 `id, network_id, product_id, created_by (membership), quantity, status (active|fulfilled|cancelled|expired), expires_at, created_at, updated_at`
 Constraint: `quantity > 0`.
 
 ### StockMovement
+
 `id, network_id, product_id, type (RESTOCK|ADJUSTMENT_LOSS|ADJUSTMENT_CORRECTION|SALE_DIRECT|SALE_FROM_RESERVATION|RETURN), quantity_delta, reason (text, required), created_by (membership), reservation_id (nullable, set only for SALE_FROM_RESERVATION), created_at`
 Append-only: no update/delete endpoint. Corrections are new movements, not edits.
 
 ### Invite
+
 `id, network_id, code (high-entropy token), created_by, expires_at, used_at (nullable), used_by (nullable)`
 Single-use, network-scoped, expiring — never a guessable/sequential ID (see security model).
 
@@ -48,7 +55,7 @@ Single-use, network-scoped, expiring — never a guessable/sequential ID (see se
 
 1. `available_quantity = on_hand_quantity - reserved_quantity`, always `>= 0`. Enforced at the DB level via `reserved_quantity <= on_hand_quantity` plus non-negativity checks, and re-verified in the application transaction before every mutation.
 2. Reservations never mutate `on_hand_quantity` directly. Only Stock Movements do.
-3. `on_hand_quantity` decreases only through a Stock Movement. A `SALE_FROM_RESERVATION` movement is the *only* type allowed to simultaneously close a Reservation (fulfilled) and decrease `on_hand_quantity`/`reserved_quantity` together, in one transaction.
+3. `on_hand_quantity` decreases only through a Stock Movement. A `SALE_FROM_RESERVATION` movement is the _only_ type allowed to simultaneously close a Reservation (fulfilled) and decrease `on_hand_quantity`/`reserved_quantity` together, in one transaction.
 4. Negative on-hand or negative available is never permitted; a movement that would violate this is rejected as a conflict, not silently clamped to zero.
 5. A Reservation cannot be created for more than the currently available quantity, evaluated inside the same transaction that locks the Product row (no read-then-write gap).
 6. Reservations are not required to consume all remaining availability — partial reservations are valid.
@@ -63,6 +70,7 @@ active --(cancelled by creator or member.cancel.any holder)--> cancelled
 active --(expires_at reached, lazily observed or swept)--> expired
 active --(fulfilled via SALE_FROM_RESERVATION movement)--> fulfilled
 ```
+
 `cancelled`, `expired`, `fulfilled` are terminal. No transitions out.
 
 ## Concurrency Scenarios (see [ADR-002](../decisions/ADR-002-reservation-concurrency.md) for the chosen mechanism)
@@ -74,17 +82,17 @@ active --(fulfilled via SALE_FROM_RESERVATION movement)--> fulfilled
 
 ## Permission-Sensitive Operations
 
-| Operation | Required Capability | Notes |
-|---|---|---|
-| View products / availability | `inventory.read` | Default for every Membership. |
-| Create a reservation | `reservation.create` | Default for every Membership in MVP. |
-| Cancel own reservation | `reservation.cancel.own` | Default for every Membership. |
-| Cancel another member's reservation | `reservation.cancel.any` | Owner by default; grantable. |
-| Record a Stock Movement (change on-hand) | `inventory.adjust` | Owner by default; grantable from Slice 4. |
-| Create/edit/deactivate a Product | `product.manage` | Owner by default; grantable from Slice 4. |
-| Invite/remove a Member | `member.manage` | Owner-exclusive, non-delegatable in MVP. |
-| Grant/revoke Capabilities | `permission.manage` | Owner-exclusive, non-delegatable in MVP. |
-| View Stock Movement / reservation history | `audit.read` | Owner by default; grantable. |
+| Operation                                 | Required Capability      | Notes                                     |
+| ----------------------------------------- | ------------------------ | ----------------------------------------- |
+| View products / availability              | `inventory.read`         | Default for every Membership.             |
+| Create a reservation                      | `reservation.create`     | Default for every Membership in MVP.      |
+| Cancel own reservation                    | `reservation.cancel.own` | Default for every Membership.             |
+| Cancel another member's reservation       | `reservation.cancel.any` | Owner by default; grantable.              |
+| Record a Stock Movement (change on-hand)  | `inventory.adjust`       | Owner by default; grantable from Slice 4. |
+| Create/edit/deactivate a Product          | `product.manage`         | Owner by default; grantable from Slice 4. |
+| Invite/remove a Member                    | `member.manage`          | Owner-exclusive, non-delegatable in MVP.  |
+| Grant/revoke Capabilities                 | `permission.manage`      | Owner-exclusive, non-delegatable in MVP.  |
+| View Stock Movement / reservation history | `audit.read`             | Owner by default; grantable.              |
 
 ## Open Domain Decisions
 

@@ -52,10 +52,7 @@ export class ApiService {
 
   createInvite(networkId: string): Promise<{ invite: { code: string; expiresAt: string } }> {
     return firstValueFrom(
-      this.http.post<{ invite: { code: string; expiresAt: string } }>(
-        `${API_BASE}/networks/${networkId}/invites`,
-        {}
-      )
+      this.http.post<{ invite: { code: string; expiresAt: string } }>(`${API_BASE}/networks/${networkId}/invites`, {})
     );
   }
 
@@ -97,7 +94,10 @@ export class ApiService {
   // and the Owner to review; never a write on its own. Returns null when disabled
   // (CATALOG_PROVIDER=none), on any provider failure, or when nothing was found — the
   // caller must treat all three the same way (fall back to manual entry).
-  lookupBarcode(networkId: string, barcode: string): Promise<{ suggestion: { name: string | null; brand: string | null; imageUrl: string | null } | null }> {
+  lookupBarcode(
+    networkId: string,
+    barcode: string
+  ): Promise<{ suggestion: { name: string | null; brand: string | null; imageUrl: string | null } | null }> {
     return firstValueFrom(
       this.http.get<{ suggestion: { name: string | null; brand: string | null; imageUrl: string | null } | null }>(
         `${API_BASE}/networks/${networkId}/catalog-lookup`,
@@ -118,9 +118,7 @@ export class ApiService {
       initialOnHandQuantity?: number;
     }
   ): Promise<{ product: Product }> {
-    return firstValueFrom(
-      this.http.post<{ product: Product }>(`${API_BASE}/networks/${networkId}/products`, input)
-    );
+    return firstValueFrom(this.http.post<{ product: Product }>(`${API_BASE}/networks/${networkId}/products`, input));
   }
 
   // A fresh Idempotency-Key per call means a genuine double-tap intentionally creates
@@ -150,7 +148,10 @@ export class ApiService {
     networkId: string,
     reservationId: string,
     reason: string
-  ): Promise<{ product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number }; movement: StockMovement }> {
+  ): Promise<{
+    product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number };
+    movement: StockMovement;
+  }> {
     return firstValueFrom(
       this.http.post<{
         product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number };
@@ -177,7 +178,10 @@ export class ApiService {
     networkId: string,
     productId: string,
     input: { type: StockMovementType; quantityDelta: number; reason: string }
-  ): Promise<{ product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number }; movement: StockMovement }> {
+  ): Promise<{
+    product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number };
+    movement: StockMovement;
+  }> {
     return firstValueFrom(
       this.http.post<{
         product: { onHandQuantity: number; reservedQuantity: number; availableQuantity: number };
@@ -195,7 +199,13 @@ export class ApiService {
   updateProduct(
     networkId: string,
     productId: string,
-    input: Partial<{ name: string; brand: string | null; category: string | null; imageUrl: string | null; isActive: boolean }>
+    input: Partial<{
+      name: string;
+      brand: string | null;
+      category: string | null;
+      imageUrl: string | null;
+      isActive: boolean;
+    }>
   ): Promise<{ product: Product }> {
     return firstValueFrom(
       this.http.patch<{ product: Product }>(`${API_BASE}/networks/${networkId}/products/${productId}`, input)

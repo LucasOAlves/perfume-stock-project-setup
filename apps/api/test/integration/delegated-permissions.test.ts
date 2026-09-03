@@ -60,12 +60,7 @@ describe("delegated capabilities (Slice 4)", () => {
     return { owner, seller, networkId, sellerMembershipId, ownerMembershipId };
   }
 
-  function setCapabilities(
-    actor: SignedUpUser,
-    networkId: string,
-    membershipId: string,
-    capabilities: string[]
-  ) {
+  function setCapabilities(actor: SignedUpUser, networkId: string, membershipId: string, capabilities: string[]) {
     return app.inject({
       method: "PUT",
       url: `/networks/${networkId}/members/${membershipId}/capabilities`,
@@ -97,7 +92,10 @@ describe("delegated capabilities (Slice 4)", () => {
     });
     expect(before.statusCode).toBe(403);
 
-    const grantRes = await setCapabilities(owner, networkId, sellerMembershipId, ["inventory.read", "inventory.adjust"]);
+    const grantRes = await setCapabilities(owner, networkId, sellerMembershipId, [
+      "inventory.read",
+      "inventory.adjust"
+    ]);
     expect(grantRes.statusCode).toBe(200);
 
     // After the grant: seller succeeds.
@@ -133,7 +131,11 @@ describe("delegated capabilities (Slice 4)", () => {
     expect(granted.statusCode).toBe(201);
 
     // Revoke by replacing with the default set (no inventory.adjust).
-    await setCapabilities(owner, networkId, sellerMembershipId, ["inventory.read", "reservation.create", "reservation.cancel.own"]);
+    await setCapabilities(owner, networkId, sellerMembershipId, [
+      "inventory.read",
+      "reservation.create",
+      "reservation.cancel.own"
+    ]);
 
     const revoked = await app.inject({
       method: "POST",

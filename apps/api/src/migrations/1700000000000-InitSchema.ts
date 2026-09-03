@@ -83,7 +83,9 @@ export class InitSchema1700000000000 implements MigrationInterface {
         CONSTRAINT "fk_membership_capabilities_membership" FOREIGN KEY ("membership_id") REFERENCES "memberships"("id") ON DELETE CASCADE
       )
     `);
-    await queryRunner.query(`CREATE INDEX "idx_membership_capabilities_membership_id" ON "membership_capabilities" ("membership_id")`);
+    await queryRunner.query(
+      `CREATE INDEX "idx_membership_capabilities_membership_id" ON "membership_capabilities" ("membership_id")`
+    );
 
     await queryRunner.query(`
       CREATE TABLE "invites" (

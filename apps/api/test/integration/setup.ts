@@ -58,7 +58,11 @@ export async function createTestDataSource(): Promise<DataSource> {
   return dataSource;
 }
 
-export async function buildTestApp(): Promise<{ app: FastifyInstance; dataSource: DataSource; otpSender: CapturingOtpSender }> {
+export async function buildTestApp(): Promise<{
+  app: FastifyInstance;
+  dataSource: DataSource;
+  otpSender: CapturingOtpSender;
+}> {
   const dataSource = await createTestDataSource();
   const otpSender = new CapturingOtpSender();
   // Explicit Noop provider — tests must never depend on network access to a real

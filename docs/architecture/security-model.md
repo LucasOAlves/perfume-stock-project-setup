@@ -18,7 +18,7 @@ The two blocking failure classes for this product are **cross-network access** (
 - Every table holding network-owned data carries an explicit `network_id`. Every query touching such a table filters on it.
 - `network_id` arriving in a request (path, query, or body) is **never** trusted directly — it is used only as a lookup key, re-validated against the authenticated User's own Memberships on every single request. A Membership row for `(user_id, network_id)` must be found and `active` before any read or write proceeds.
 - Security review of every new endpoint must explicitly ask: "if I change only the `network_id` (or `product_id`/`reservation_id` belonging to another network) in this request, do I get 403/404, or do I get another network's data?" — this is the IDOR/BOLA check required by `.agents/security-reviewer.md` and must be part of the API integration test suite (`.agents/qa-engineer.md`), not just manual review.
-- Resource IDs referenced in a request (e.g. `product_id`, `reservation_id`) must be checked for both existence *and* membership in the request's own `network_id` — fetching by ID alone without a network filter is the specific bug pattern to search for in review.
+- Resource IDs referenced in a request (e.g. `product_id`, `reservation_id`) must be checked for both existence _and_ membership in the request's own `network_id` — fetching by ID alone without a network filter is the specific bug pattern to search for in review.
 
 ## Authorization (see [ADR-003](../decisions/ADR-003-authorization-model.md))
 

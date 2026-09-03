@@ -51,8 +51,13 @@ Do not expose stack traces or database/provider internals.
 ## Output
 
 ### Severity
+
 ### Finding
+
 ### Attack/Failure Scenario
+
 ### Affected Boundary
+
 ### Recommendation
+
 ### MVP Blocking?
