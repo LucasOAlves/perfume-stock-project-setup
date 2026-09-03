@@ -21,9 +21,21 @@ All 16 tests (5 unit + 11 integration) pass against the real database after both
 
 - `apps/api/package.json` was missing `ts-node` as a devDependency, which `typeorm-ts-node-commonjs` (used by the `migration:*` scripts) requires. Added.
 
-## npm workspace hoisting: duplicate `rxjs` after `ng new`
+## npm workspace hoisting: duplicate `rxjs` after `ng new` — real fix vs. workaround
 
-Running `@angular/cli new` inside `apps/web` triggers its own `npm install`, which — even inside an npm workspace — created a _nested_ `apps/web/node_modules/rxjs` alongside the hoisted root one. This produced confusing TypeScript errors (`Observable<T>` from two different module resolution paths reported as incompatible types) that had nothing to do with the actual code. Fix was `rm -rf apps/web/node_modules/rxjs` after scaffolding, letting Node's module resolution fall through to the root copy. If a future `npm install` reintroduces a nested `rxjs` (or any other package apps/api and apps/web both depend on) and TypeScript errors mention two different `node_modules` paths for the "same" type, this is the first thing to check — not a real type error in the code.
+Running `@angular/cli new` inside `apps/web` triggers its own `npm install`, which — even inside an npm workspace — created a _nested_ `apps/web/node_modules/rxjs` alongside the hoisted root one. This produced confusing TypeScript errors (`Observable<T>` from two different module resolution paths reported as incompatible types) that had nothing to do with the actual code.
+
+The first fix tried was `rm -rf apps/web/node_modules/rxjs` after each install — this only patches the local checkout; it does **not** survive a fresh `npm ci` (exactly what CI does), so the first real GitHub Actions run reproduced the same build failure the manual delete had been hiding locally. `npm explain rxjs -w apps/web` showed the actual cause: `@angular-devkit/build-angular` (an `apps/web` devDependency) pulls its own `rxjs@7.8.1` as a direct dependency, and because `@angular-devkit/build-angular` itself doesn't hoist cleanly to the root, npm nests its whole subtree — rxjs included — under `apps/web/node_modules`, even though the version is textually identical to the root copy. TypeScript treats the two as structurally distinct types anyway, since they resolve from different module paths.
+
+Real fix: pin a single resolved version everywhere via npm's `overrides` field in the root `package.json`:
+
+```json
+"overrides": {
+  "rxjs": "7.8.1"
+}
+```
+
+This forces npm to dedupe every `rxjs` resolution (direct or transitive, including inside `@angular-devkit/build-angular`) to one copy at the root — verified with a from-scratch `rm -rf node_modules package-lock.json && npm install`, only one `node_modules/rxjs` exists afterward, and `npm run build:web` succeeds without touching any generated files by hand. If a future `npm install` reintroduces a nested copy of any package both workspaces depend on and TypeScript errors mention two different `node_modules` paths for the "same" type, `npm explain <pkg> -w <workspace>` is the way to find which devDependency is pulling its own copy — the `overrides` fix generalizes to that package, not just rxjs.
 
 ## Deferred to Slice 2+ (per `docs/plans/mvp.md`, not a gap in Slice 1 itself)
 
