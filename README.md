@@ -6,6 +6,16 @@ Shared ready-to-deliver perfume/cosmetics inventory for a stock Owner and their 
 
 This repository was built via a Compound Engineering workflow: `.agents/` holds the specialist briefs used to reach every decision under `docs/`, and `MASTER_PROMPT.md` is the process that produced them. All five MVP vertical slices are implemented and verified — identity/network/membership, stock mutation with movement history, reservations with concurrency correctness, delegated permissions, and optional barcode-based catalog enrichment. See `docs/plans/mvp.md` for the full breakdown and `docs/learnings/` for what each slice's real-world verification actually found.
 
+## Retomando em outro ambiente
+
+Checklist para continuar o desenvolvimento numa máquina nova (o código e as decisões vivem neste repositório, não numa sessão de chat específica):
+
+1. `git clone https://github.com/LucasOAlves/perfume-stock-project-setup.git` e confira o badge de CI acima — se estiver vermelho, `main` está quebrado; veja a aba [Actions](https://github.com/LucasOAlves/perfume-stock-project-setup/actions) antes de continuar.
+2. Leia, nessa ordem, para reconstruir o contexto: [`docs/product/product-spec.md`](docs/product/product-spec.md) (o quê e por quê), [`docs/product/domain-model.md`](docs/product/domain-model.md) (regras de negócio/invariantes), [`docs/decisions/`](docs/decisions/) (ADR-001 a ADR-008, cada decisão arquitetural com a justificativa), e [`docs/learnings/`](docs/learnings/) (bugs reais e pegadinhas de ambiente já resolvidas — vale checar antes de gastar tempo depurando algo que já foi mapeado).
+3. Siga "Local Development" abaixo para configurar o Postgres local e rodar a API/frontend.
+4. `docs/plans/mvp.md` mostra quais das 5 slices do MVP estão prontas; qualquer trabalho novo deve continuar dali, não recomeçar do zero.
+5. Nenhum agente/sessão de IA anterior persiste entre máquinas — qualquer assistente (Claude Code ou outro) que abrir esta pasta consegue se orientar sozinho lendo os arquivos acima, sem precisar do histórico de conversa.
+
 ## Stack
 
 - **API**: Node.js/TypeScript, Fastify, TypeORM, PostgreSQL. Modular monolith — see [ADR-001](docs/decisions/ADR-001-architecture-style.md).
