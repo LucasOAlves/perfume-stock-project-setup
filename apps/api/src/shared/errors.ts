@@ -49,3 +49,11 @@ export class RateLimitedError extends AppError {
     super("RATE_LIMITED", message, 429);
   }
 }
+
+// A required external dependency (e.g. the SMS provider) failed or is unreachable.
+// Distinct from ValidationError: the request itself was fine, the failure is ours/theirs.
+export class ExternalServiceError extends AppError {
+  constructor(message = "Não foi possível completar a operação agora, tente novamente em instantes") {
+    super("EXTERNAL_SERVICE_ERROR", message, 502);
+  }
+}

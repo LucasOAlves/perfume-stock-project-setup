@@ -48,7 +48,9 @@ npm run dev:api                # Fastify on :3000 (OTP codes print to this conso
 npm run dev:web                # Angular dev server on :4200
 ```
 
-Open http://localhost:4200. Sign in with any E.164-format phone number (e.g. `+5511999998888`); the OTP code is **not sent anywhere** in local dev — it's printed to the `dev:api` terminal (see `apps/api/src/modules/identity/otp-sender.ts`, `OTP_SENDER=console`). Never deploy with that OTP sender — it must be swapped for a real SMS/WhatsApp adapter behind the same `OtpSender` interface before production use.
+Open http://localhost:4200. Sign in with any E.164-format phone number (e.g. `+5511999998888`); the OTP code is **not sent anywhere** by default — it's printed to the `dev:api` terminal (see `apps/api/src/modules/identity/otp-sender.ts`, `OTP_SENDER=console`).
+
+To send a real SMS instead, set `OTP_SENDER=twilio` plus `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER` in `apps/api/.env` (from your own [Twilio console](https://console.twilio.com) — creating that account and buying a number is a manual step outside this repo) and restart `dev:api`. Missing any of the three fails at startup with a clear error, not on the first user's login attempt. See [ADR-009](docs/decisions/ADR-009-otp-delivery-channel.md) for why SMS over WhatsApp Business API for now.
 
 Optional: set `CATALOG_PROVIDER=openbeautyfacts` in `apps/api/.env` (then restart `dev:api` — env vars are only read at process start) to enable real barcode-lookup pre-fill on the "new product" form via the free [Open Beauty Facts](https://world.openbeautyfacts.org/) API. See [ADR-005](docs/decisions/ADR-005-catalog-provider.md). Coverage of these specific Brazilian direct-sales products is sparse — manual entry is always the primary path regardless.
 

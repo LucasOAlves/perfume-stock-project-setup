@@ -11,7 +11,7 @@ import { installPortugueseZodErrorMap } from "./shared/zod-pt-br";
 installPortugueseZodErrorMap();
 import { authPlugin } from "./shared/auth-plugin";
 import { IdentityService } from "./modules/identity/identity.service";
-import { ConsoleOtpSender, type OtpSender } from "./modules/identity/otp-sender";
+import { ConsoleOtpSender, TwilioOtpSender, type OtpSender } from "./modules/identity/otp-sender";
 import { registerIdentityRoutes } from "./modules/identity/identity.routes";
 import { NetworksService } from "./modules/networks/networks.service";
 import { registerNetworksRoutes } from "./modules/networks/networks.routes";
@@ -37,6 +37,27 @@ function defaultCatalogProvider(): CatalogProvider {
   return env.catalogProvider === "openbeautyfacts" ? new OpenBeautyFactsCatalogProvider() : new NoopCatalogProvider();
 }
 
+function defaultOtpSender(): OtpSender {
+  if (env.otpSender !== "twilio") return new ConsoleOtpSender();
+
+  // Fail loudly at startup, not on the first login attempt — a missing credential here
+  // means every user is locked out until someone notices the OTP endpoint 500ing.
+  const missing = (
+    [
+      ["TWILIO_ACCOUNT_SID", env.twilioAccountSid],
+      ["TWILIO_AUTH_TOKEN", env.twilioAuthToken],
+      ["TWILIO_FROM_NUMBER", env.twilioFromNumber]
+    ] as const
+  )
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+  if (missing.length > 0) {
+    throw new Error(`OTP_SENDER=twilio requires ${missing.join(", ")} to be set — see apps/api/.env.example`);
+  }
+
+  return new TwilioOtpSender(env.twilioAccountSid!, env.twilioAuthToken!, env.twilioFromNumber!);
+}
+
 export async function buildApp(dataSource: DataSource, options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({ logger: options.logger ?? true, trustProxy: true });
 
@@ -47,7 +68,7 @@ export async function buildApp(dataSource: DataSource, options: BuildAppOptions 
     credentials: true
   });
 
-  const otpSender = options.otpSender ?? new ConsoleOtpSender();
+  const otpSender = options.otpSender ?? defaultOtpSender();
   const identityService = new IdentityService(dataSource, otpSender);
   const networksService = new NetworksService(dataSource);
   const catalogService = new CatalogService(dataSource, options.catalogProvider ?? defaultCatalogProvider());
