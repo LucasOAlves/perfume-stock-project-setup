@@ -11,7 +11,7 @@ Angular app (mobile-first)
      │  HTTPS, cookie session
      ▼
 Node.js/TypeScript API (single deployable)
- ├─ identity module        (phone+OTP, sessions)
+ ├─ identity module        (email+OTP, sessions)
  ├─ networks module        (Sales Network, Membership, Invite)
  ├─ catalog module         (Product)
  ├─ inventory module       (StockMovement)

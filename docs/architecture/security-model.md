@@ -8,10 +8,10 @@ The two blocking failure classes for this product are **cross-network access** (
 
 ## Authentication (see [ADR-004](../decisions/ADR-004-authentication-mechanism.md))
 
-- OTP: 5-minute expiry, single-use, rate-limited per phone number and per source IP, exponential backoff/lockout on repeated failures. Never logged, in any log level, including error/debug output.
+- OTP: 5-minute expiry, single-use, rate-limited per email address and per source IP, exponential backoff/lockout on repeated failures. Never logged, in any log level, including error/debug output.
 - Session: httpOnly, Secure, SameSite=Lax cookie. No token in `localStorage`/`sessionStorage`.
 - CSRF: required on all state-changing requests because the session is cookie-based — double-submit or synchronizer token pattern, checked server-side.
-- Phone number is personal data: store it, but do not expose another member's full phone number in any API response beyond what the product genuinely needs (display name is the default identifier shown to other members; full phone visible to the Owner and to the phone's own owner only, unless a real need for broader visibility is demonstrated).
+- Email address is personal data (identifier changed from phone to email per [ADR-010](../decisions/ADR-010-otp-channel-cost-optimization.md)): store it, but do not expose another member's full email address in any API response beyond what the product genuinely needs (display name is the default identifier shown to other members; full email visible to the Owner and to the email's own owner only, unless a real need for broader visibility is demonstrated).
 
 ## Tenant / Network Isolation
 
@@ -41,19 +41,19 @@ The two blocking failure classes for this product are **cross-network access** (
 ## External Integrations
 
 - `CatalogProvider` responses (if/when Slice 5 ships an enrichment adapter) are untrusted input: validate shape and sanitize before persisting; never render raw provider HTML/text; treat provider-supplied image URLs as untrusted (no automatic hot-linking of unverified sources without at least a domain allowlist).
-- `OtpSender` (SMS/WhatsApp) credentials live in environment variables/secrets storage, never in source control, never logged.
+- `OtpSender` (email provider) credentials live in environment variables/secrets storage, never in source control, never logged.
 - Provider outages must degrade gracefully: a `CatalogProvider` failure must never block manual product creation/editing (explicit non-goal violation otherwise); an `OtpSender` failure must surface a clear, non-leaking error to the user, not a stack trace.
 
 ## Data Handling / Logging
 
-- Never log: OTP codes, session tokens, CSRF tokens, full phone numbers (mask if a phone must appear in a log line at all), raw request bodies of authentication endpoints.
+- Never log: OTP codes, session tokens, CSRF tokens, full email addresses (mask if an email must appear in a log line at all), raw request bodies of authentication endpoints.
 - Errors returned to clients never include stack traces, ORM/query text, or provider credentials — map internal errors to a small set of stable, typed application error codes.
-- Structured logs should carry a request correlation ID and the resolved `network_id`/`membership_id` (not raw phone number) for failed-auth and failed-authorization events specifically, since those are the events most likely to matter during a real incident review.
+- Structured logs should carry a request correlation ID and the resolved `network_id`/`membership_id` (not a raw email address) for failed-auth and failed-authorization events specifically, since those are the events most likely to matter during a real incident review.
 
 ## LGPD-Aware Data Minimization (not legal advice)
 
-- Collect only display name + phone number for the MVP profile — no address, no document number, no unnecessary fields.
-- Do not replicate phone numbers into logs, analytics events, or third-party services beyond the OTP provider itself.
+- Collect only display name + email address for the MVP profile — no address, no document number, no unnecessary fields.
+- Do not replicate email addresses into logs, analytics events, or third-party services beyond the OTP provider itself.
 - A Membership `status = removed` (see domain model) keeps historical Stock Movement/Reservation records intact for audit while removing the User's active access — this is a retention-vs-deletion tradeoff worth documenting if a real deletion request ever needs to be honored; flag to qualified legal review before making a retention/deletion policy claim to users.
 
 ## MVP-Blocking vs. Non-Blocking

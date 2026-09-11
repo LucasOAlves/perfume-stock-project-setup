@@ -7,9 +7,9 @@ export class OtpChallengeEntity {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @Index("idx_otp_challenges_phone")
-  @Column({ type: "varchar", length: 20 })
-  phone!: string;
+  @Index("idx_otp_challenges_email")
+  @Column({ type: "varchar", length: 254 })
+  email!: string;
 
   @Column({ type: "varchar", length: 45, name: "request_ip" })
   requestIp!: string;

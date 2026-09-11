@@ -16,18 +16,18 @@ import { ReservationEntity } from "../../src/modules/reservations/entities/reser
 import type { OtpSender } from "../../src/modules/identity/otp-sender";
 import { NoopCatalogProvider } from "../../src/modules/catalog/catalog-provider";
 
-// Test-only OTP sender that captures the last code per phone instead of sending it,
+// Test-only OTP sender that captures the last code per email instead of sending it,
 // so tests can drive the real HTTP request/verify flow end to end.
 export class CapturingOtpSender implements OtpSender {
-  private codesByPhone = new Map<string, string>();
+  private codesByEmail = new Map<string, string>();
 
-  async send(phone: string, code: string): Promise<void> {
-    this.codesByPhone.set(phone, code);
+  async send(email: string, code: string): Promise<void> {
+    this.codesByEmail.set(email, code);
   }
 
-  codeFor(phone: string): string {
-    const code = this.codesByPhone.get(phone);
-    if (!code) throw new Error(`No OTP captured for ${phone}`);
+  codeFor(email: string): string {
+    const code = this.codesByEmail.get(email);
+    if (!code) throw new Error(`No OTP captured for ${email}`);
     return code;
   }
 }
@@ -77,21 +77,21 @@ export interface SignedUpUser {
   userId: string;
 }
 
-// Drives the real phone+OTP HTTP flow (request -> verify) so integration tests exercise
+// Drives the real email+OTP HTTP flow (request -> verify) so integration tests exercise
 // the same code path production traffic does, per docs/architecture/security-model.md.
 export async function signUp(
   app: FastifyInstance,
   otpSender: CapturingOtpSender,
-  phone: string,
+  email: string,
   displayName: string
 ): Promise<SignedUpUser> {
-  await app.inject({ method: "POST", url: "/auth/otp/request", payload: { phone } });
-  const code = otpSender.codeFor(phone);
+  await app.inject({ method: "POST", url: "/auth/otp/request", payload: { email } });
+  const code = otpSender.codeFor(email);
 
   const verifyResponse = await app.inject({
     method: "POST",
     url: "/auth/otp/verify",
-    payload: { phone, code, displayName }
+    payload: { email, code, displayName }
   });
 
   const setCookies = verifyResponse.cookies;

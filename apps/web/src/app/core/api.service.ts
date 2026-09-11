@@ -24,13 +24,13 @@ const API_BASE = 'http://localhost:3000';
 export class ApiService {
   constructor(private readonly http: HttpClient) {}
 
-  requestOtp(phone: string): Promise<void> {
-    return firstValueFrom(this.http.post<void>(`${API_BASE}/auth/otp/request`, { phone }));
+  requestOtp(email: string): Promise<void> {
+    return firstValueFrom(this.http.post<void>(`${API_BASE}/auth/otp/request`, { email }));
   }
 
-  verifyOtp(phone: string, code: string, displayName?: string): Promise<{ user: CurrentUser }> {
+  verifyOtp(email: string, code: string, displayName?: string): Promise<{ user: CurrentUser }> {
     return firstValueFrom(
-      this.http.post<{ user: CurrentUser }>(`${API_BASE}/auth/otp/verify`, { phone, code, displayName })
+      this.http.post<{ user: CurrentUser }>(`${API_BASE}/auth/otp/verify`, { email, code, displayName })
     );
   }
 

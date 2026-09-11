@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted for the OTP/session/CSRF mechanism, which is unchanged. **The identifier and delivery channel described here (phone number, SMS/WhatsApp) were later replaced by email — see [ADR-010](ADR-010-otp-channel-cost-optimization.md).** Read "phone number" below as historical context for why OTP-based auth was chosen at all; the current identifier is email.
 
 ## Context
 

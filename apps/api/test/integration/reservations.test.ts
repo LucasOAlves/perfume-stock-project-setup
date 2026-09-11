@@ -22,8 +22,8 @@ describe("reservations (Slice 3)", () => {
     await dataSource.destroy();
   });
 
-  async function setupNetworkWithProduct(ownerPhone: string, initialQuantity: number) {
-    const owner = await signUp(app, otpSender, ownerPhone, "Owner");
+  async function setupNetworkWithProduct(ownerEmail: string, initialQuantity: number) {
+    const owner = await signUp(app, otpSender, ownerEmail, "Owner");
     const networkRes = await app.inject({
       method: "POST",
       url: "/networks",
@@ -43,14 +43,14 @@ describe("reservations (Slice 3)", () => {
     return { owner, networkId, productId };
   }
 
-  async function addSeller(owner: SignedUpUser, networkId: string, phone: string, displayName: string) {
+  async function addSeller(owner: SignedUpUser, networkId: string, email: string, displayName: string) {
     const inviteRes = await app.inject({
       method: "POST",
       url: `/networks/${networkId}/invites`,
       headers: { cookie: owner.cookies, "x-csrf-token": owner.csrfToken }
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
-    const seller = await signUp(app, otpSender, phone, displayName);
+    const seller = await signUp(app, otpSender, email, displayName);
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -80,7 +80,7 @@ describe("reservations (Slice 3)", () => {
   }
 
   it("lets a member reserve available stock and reduces available quantity", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000040", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000040@test.local", 5);
 
     const res = await reserve(owner, networkId, productId, 2);
     expect(res.statusCode).toBe(201);
@@ -97,14 +97,14 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("rejects a reservation that exceeds available quantity", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000041", 3);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000041@test.local", 3);
 
     const res = await reserve(owner, networkId, productId, 4);
     expect(res.statusCode).toBe(409);
   });
 
   it("requires an Idempotency-Key header", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000042", 3);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000042@test.local", 3);
 
     const res = await app.inject({
       method: "POST",
@@ -116,7 +116,7 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("replays the same reservation instead of double-reserving on a retried request with the same Idempotency-Key", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000043", 3);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000043@test.local", 3);
     const key = randomUUID();
 
     const first = await reserve(owner, networkId, productId, 2, key);
@@ -141,9 +141,9 @@ describe("reservations (Slice 3)", () => {
   // unit; exactly one reservation must succeed, and the other must get a clean conflict,
   // never a silent over-reservation.
   it("allows exactly one of two concurrent reservations for the last unit to succeed", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000044", 1);
-    const sellerA = await addSeller(owner, networkId, "+5511900000045", "Seller A");
-    const sellerB = await addSeller(owner, networkId, "+5511900000046", "Seller B");
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000044@test.local", 1);
+    const sellerA = await addSeller(owner, networkId, "user11900000045@test.local", "Seller A");
+    const sellerB = await addSeller(owner, networkId, "user11900000046@test.local", "Seller B");
 
     const [resA, resB] = await Promise.all([
       reserve(sellerA, networkId, productId, 1),
@@ -165,7 +165,7 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("restores availability when a reservation is cancelled, and cancelling twice is idempotent", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000047", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000047@test.local", 5);
     const createRes = await reserve(owner, networkId, productId, 2);
     const reservationId = (createRes.json() as { reservation: { id: string } }).reservation.id;
 
@@ -193,9 +193,9 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("prevents one seller from cancelling another seller's reservation without reservation.cancel.any", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000048", 5);
-    const sellerA = await addSeller(owner, networkId, "+5511900000049", "Seller A");
-    const sellerB = await addSeller(owner, networkId, "+5511900000050", "Seller B");
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000048@test.local", 5);
+    const sellerA = await addSeller(owner, networkId, "user11900000049@test.local", "Seller A");
+    const sellerB = await addSeller(owner, networkId, "user11900000050@test.local", "Seller B");
 
     const createRes = await reserve(sellerA, networkId, productId, 1);
     const reservationId = (createRes.json() as { reservation: { id: string } }).reservation.id;
@@ -209,8 +209,8 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("lets the owner cancel any member's reservation via reservation.cancel.any", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000051", 5);
-    const seller = await addSeller(owner, networkId, "+5511900000052", "Seller");
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000051@test.local", 5);
+    const seller = await addSeller(owner, networkId, "user11900000052@test.local", "Seller");
 
     const createRes = await reserve(seller, networkId, productId, 1);
     const reservationId = (createRes.json() as { reservation: { id: string } }).reservation.id;
@@ -224,7 +224,7 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("fulfils a reservation: closes it and decrements on-hand and reserved together via a SALE_FROM_RESERVATION movement", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000053", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000053@test.local", 5);
     const createRes = await reserve(owner, networkId, productId, 2);
     const reservationId = (createRes.json() as { reservation: { id: string } }).reservation.id;
 
@@ -256,8 +256,8 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("rejects a seller without inventory.adjust from fulfilling a reservation", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000054", 5);
-    const seller = await addSeller(owner, networkId, "+5511900000055", "Seller");
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000054@test.local", 5);
+    const seller = await addSeller(owner, networkId, "user11900000055@test.local", "Seller");
     const createRes = await reserve(seller, networkId, productId, 1);
     const reservationId = (createRes.json() as { reservation: { id: string } }).reservation.id;
 
@@ -271,7 +271,7 @@ describe("reservations (Slice 3)", () => {
   });
 
   it("lets a member list their own reservations", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000056", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000056@test.local", 5);
     await reserve(owner, networkId, productId, 1);
     await reserve(owner, networkId, productId, 1);
 

@@ -41,8 +41,8 @@ describe("catalog lookup (Slice 5)", () => {
     await dataSource.destroy();
   });
 
-  async function setupOwner(phone: string) {
-    const owner = await signUp(app, otpSender, phone, "Owner");
+  async function setupOwner(email: string) {
+    const owner = await signUp(app, otpSender, email, "Owner");
     const networkRes = await app.inject({
       method: "POST",
       url: "/networks",
@@ -54,7 +54,7 @@ describe("catalog lookup (Slice 5)", () => {
   }
 
   it("returns a suggestion for product.manage holders and never creates a product itself", async () => {
-    const { owner, networkId } = await setupOwner("+5511900000080");
+    const { owner, networkId } = await setupOwner("user11900000080@test.local");
 
     const res = await app.inject({
       method: "GET",
@@ -74,14 +74,14 @@ describe("catalog lookup (Slice 5)", () => {
   });
 
   it("rejects a seller without product.manage from using the lookup", async () => {
-    const { owner, networkId } = await setupOwner("+5511900000081");
+    const { owner, networkId } = await setupOwner("user11900000081@test.local");
     const inviteRes = await app.inject({
       method: "POST",
       url: `/networks/${networkId}/invites`,
       headers: { cookie: owner.cookies, "x-csrf-token": owner.csrfToken }
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
-    const seller = await signUp(app, otpSender, "+5511900000082", "Seller");
+    const seller = await signUp(app, otpSender, "user11900000082@test.local", "Seller");
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -98,8 +98,8 @@ describe("catalog lookup (Slice 5)", () => {
   });
 
   it("requires a network membership and rejects cross-network use", async () => {
-    const outsider = await signUp(app, otpSender, "+5511900000083", "Outsider");
-    const { networkId } = await setupOwner("+5511900000084");
+    const outsider = await signUp(app, otpSender, "user11900000083@test.local", "Outsider");
+    const { networkId } = await setupOwner("user11900000084@test.local");
 
     const res = await app.inject({
       method: "GET",

@@ -6,7 +6,7 @@ Status: All five slices implemented and verified (Slices 1–4 against real Post
 
 **User value:** An Owner can create a network and invite Sellers; every member can see real product availability. This alone already replaces the phone call for the _read_ side of the problem.
 
-**Scope:** Phone+OTP auth and session (ADR-004); Sales Network creation; Owner-issued single-use expiring invite links; invite consumption creates a Membership with default capabilities; manual Product CRUD (Owner/`product.manage` only — Owner-only in Slice 1 since delegation doesn't exist yet); product search/list showing `available_quantity` (= `on_hand_quantity` since no reservations exist yet) to every Membership; basic Owner-only screen to set initial `on_hand_quantity` at product creation (not yet a full movement history — that's Slice 2).
+**Scope:** Email+OTP auth and session (ADR-004, later ADR-010); Sales Network creation; Owner-issued single-use expiring invite links; invite consumption creates a Membership with default capabilities; manual Product CRUD (Owner/`product.manage` only — Owner-only in Slice 1 since delegation doesn't exist yet); product search/list showing `available_quantity` (= `on_hand_quantity` since no reservations exist yet) to every Membership; basic Owner-only screen to set initial `on_hand_quantity` at product creation (not yet a full movement history — that's Slice 2).
 
 **Out of scope:** Reservations, stock movement history/audit, delegated capabilities, external catalog import.
 

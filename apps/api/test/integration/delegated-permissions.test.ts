@@ -24,8 +24,8 @@ describe("delegated capabilities (Slice 4)", () => {
     await dataSource.destroy();
   });
 
-  async function setupNetworkWithSeller(ownerPhone: string, sellerPhone: string) {
-    const owner = await signUp(app, otpSender, ownerPhone, "Owner");
+  async function setupNetworkWithSeller(ownerEmail: string, sellerEmail: string) {
+    const owner = await signUp(app, otpSender, ownerEmail, "Owner");
     const networkRes = await app.inject({
       method: "POST",
       url: "/networks",
@@ -40,7 +40,7 @@ describe("delegated capabilities (Slice 4)", () => {
       headers: { cookie: owner.cookies, "x-csrf-token": owner.csrfToken }
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
-    const seller = await signUp(app, otpSender, sellerPhone, "Seller");
+    const seller = await signUp(app, otpSender, sellerEmail, "Seller");
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -71,8 +71,8 @@ describe("delegated capabilities (Slice 4)", () => {
 
   it("lets the owner grant inventory.adjust to a seller, who can then record a movement", async () => {
     const { owner, seller, networkId, sellerMembershipId } = await setupNetworkWithSeller(
-      "+5511900000060",
-      "+5511900000061"
+      "user11900000060@test.local",
+      "user11900000061@test.local"
     );
 
     const productRes = await app.inject({
@@ -110,8 +110,8 @@ describe("delegated capabilities (Slice 4)", () => {
 
   it("blocks the seller immediately after the owner revokes the capability", async () => {
     const { owner, seller, networkId, sellerMembershipId } = await setupNetworkWithSeller(
-      "+5511900000062",
-      "+5511900000063"
+      "user11900000062@test.local",
+      "user11900000063@test.local"
     );
     const productRes = await app.inject({
       method: "POST",
@@ -148,8 +148,8 @@ describe("delegated capabilities (Slice 4)", () => {
 
   it("rejects a non-owner from changing anyone's capabilities, even one holding every other capability", async () => {
     const { owner, seller, networkId, sellerMembershipId } = await setupNetworkWithSeller(
-      "+5511900000064",
-      "+5511900000065"
+      "user11900000064@test.local",
+      "user11900000065@test.local"
     );
 
     // Grant the seller every real capability there is.
@@ -170,7 +170,10 @@ describe("delegated capabilities (Slice 4)", () => {
   });
 
   it("rejects member.manage and permission.manage as capability values at the schema level", async () => {
-    const { owner, networkId, sellerMembershipId } = await setupNetworkWithSeller("+5511900000066", "+5511900000067");
+    const { owner, networkId, sellerMembershipId } = await setupNetworkWithSeller(
+      "user11900000066@test.local",
+      "user11900000067@test.local"
+    );
 
     const res = await setCapabilities(owner, networkId, sellerMembershipId, ["permission.manage"]);
     expect(res.statusCode).toBe(400);
@@ -180,14 +183,20 @@ describe("delegated capabilities (Slice 4)", () => {
   });
 
   it("rejects setting capabilities on the owner's own membership", async () => {
-    const { owner, networkId, ownerMembershipId } = await setupNetworkWithSeller("+5511900000068", "+5511900000069");
+    const { owner, networkId, ownerMembershipId } = await setupNetworkWithSeller(
+      "user11900000068@test.local",
+      "user11900000069@test.local"
+    );
 
     const res = await setCapabilities(owner, networkId, ownerMembershipId, ["product.manage"]);
     expect(res.statusCode).toBe(400);
   });
 
   it("rejects a non-owner from reading another member's capability grants", async () => {
-    const { seller, networkId, sellerMembershipId } = await setupNetworkWithSeller("+5511900000070", "+5511900000071");
+    const { seller, networkId, sellerMembershipId } = await setupNetworkWithSeller(
+      "user11900000070@test.local",
+      "user11900000071@test.local"
+    );
 
     const res = await app.inject({
       method: "GET",
@@ -198,7 +207,10 @@ describe("delegated capabilities (Slice 4)", () => {
   });
 
   it("lets the owner read a member's current capability grants", async () => {
-    const { owner, networkId, sellerMembershipId } = await setupNetworkWithSeller("+5511900000072", "+5511900000073");
+    const { owner, networkId, sellerMembershipId } = await setupNetworkWithSeller(
+      "user11900000072@test.local",
+      "user11900000073@test.local"
+    );
     await setCapabilities(owner, networkId, sellerMembershipId, ["product.manage", "audit.read"]);
 
     const res = await app.inject({

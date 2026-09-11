@@ -13,18 +13,18 @@ export class InitSchema1700000000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE "users" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-        "phone" varchar(20) NOT NULL,
+        "email" varchar(254) NOT NULL,
         "display_name" varchar(120) NOT NULL,
         "created_at" timestamptz NOT NULL DEFAULT now(),
         CONSTRAINT "pk_users" PRIMARY KEY ("id"),
-        CONSTRAINT "uq_users_phone" UNIQUE ("phone")
+        CONSTRAINT "uq_users_email" UNIQUE ("email")
       )
     `);
 
     await queryRunner.query(`
       CREATE TABLE "otp_challenges" (
         "id" uuid NOT NULL DEFAULT gen_random_uuid(),
-        "phone" varchar(20) NOT NULL,
+        "email" varchar(254) NOT NULL,
         "request_ip" varchar(45) NOT NULL,
         "code_hash" varchar(200) NOT NULL,
         "attempts" int NOT NULL DEFAULT 0,
@@ -34,7 +34,7 @@ export class InitSchema1700000000000 implements MigrationInterface {
         CONSTRAINT "pk_otp_challenges" PRIMARY KEY ("id")
       )
     `);
-    await queryRunner.query(`CREATE INDEX "idx_otp_challenges_phone" ON "otp_challenges" ("phone")`);
+    await queryRunner.query(`CREATE INDEX "idx_otp_challenges_email" ON "otp_challenges" ("email")`);
 
     await queryRunner.query(`
       CREATE TABLE "sessions" (

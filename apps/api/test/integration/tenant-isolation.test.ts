@@ -25,8 +25,8 @@ describe("tenant isolation", () => {
   });
 
   it("prevents a member of network A from reading network B's products", async () => {
-    const owner = await signUp(app, otpSender, "+5511900000001", "Owner");
-    const outsider = await signUp(app, otpSender, "+5511900000002", "Outsider");
+    const owner = await signUp(app, otpSender, "user11900000001@test.local", "Owner");
+    const outsider = await signUp(app, otpSender, "user11900000002@test.local", "Outsider");
 
     const createNetworkRes = await app.inject({
       method: "POST",
@@ -58,7 +58,7 @@ describe("tenant isolation", () => {
   });
 
   it("rejects a mutating request without a matching CSRF token", async () => {
-    const owner = await signUp(app, otpSender, "+5511900000003", "Owner");
+    const owner = await signUp(app, otpSender, "user11900000003@test.local", "Owner");
 
     const res = await app.inject({
       method: "POST",

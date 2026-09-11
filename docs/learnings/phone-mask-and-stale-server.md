@@ -1,5 +1,7 @@
 # Learnings — Phone Mask and a Stale Dev Server Incident
 
+**Note (post-ADR-010):** the identifier changed from phone to email — `phone-format.ts`, `PHONE_REGIONS`, and the masked phone input described in "Phone input" below no longer exist in the codebase. Kept as historical record of the reasoning (hand-rolled vs. library) and the stale-dev-server incident, both still valid lessons; don't look for the actual files it describes.
+
 ## Incident: the user saw an already-fixed English error message
 
 After translating every backend error message (see `docs/learnings/naming-theming-i18n.md`), the user still saw the old English "Phone must be in E.164 format..." message in a screenshot. Cause: `tsx watch` (the `dev:api` process) had gotten stuck failing to restart — `/tmp/api.log`-equivalent showed repeated `EADDRINUSE: address already in use 0.0.0.0:3000` on every subsequent file save. What happened: an earlier restart left an old server process still bound to port 3000 (from a previous manual kill/restart cycle in this session), and every later `tsx watch` reload attempt failed to rebind, silently leaving the **stale, pre-translation process** as the one actually answering requests — while the terminal kept scrolling past what looked like normal rebuild activity.

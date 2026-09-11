@@ -12,7 +12,9 @@ const OTP_MAX_REQUESTS_PER_WINDOW = 5;
 const OTP_REQUEST_WINDOW_MS = 15 * 60 * 1000;
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
-const PHONE_PATTERN = /^\+[1-9]\d{7,14}$/; // E.164
+// Deliberately simple (no RFC 5322 edge cases) — the real validation is Brevo accepting
+// or rejecting the send; this just rejects obvious typos before hitting the challenge table.
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export interface AuthResult {
   user: UserEntity;
@@ -27,26 +29,27 @@ export class IdentityService {
     private readonly otpSender: OtpSender
   ) {}
 
-  async requestOtp(phone: string, requestIp: string): Promise<void> {
-    if (!PHONE_PATTERN.test(phone)) {
-      throw new ValidationError("Telefone deve estar no formato internacional, ex: +5511999998888");
+  async requestOtp(rawEmail: string, requestIp: string): Promise<void> {
+    const email = normalizeEmail(rawEmail);
+    if (!EMAIL_PATTERN.test(email)) {
+      throw new ValidationError("Informe um e-mail válido, ex: nome@exemplo.com");
     }
 
     const challenges = this.dataSource.getRepository(OtpChallengeEntity);
 
-    // Rate limit per phone AND per IP independently — see security-model.md.
+    // Rate limit per email AND per IP independently — see security-model.md.
     const windowStart = new Date(Date.now() - OTP_REQUEST_WINDOW_MS);
-    const [byPhone, byIp] = await Promise.all([
-      challenges.count({ where: { phone, createdAt: MoreThan(windowStart) } }),
+    const [byEmail, byIp] = await Promise.all([
+      challenges.count({ where: { email, createdAt: MoreThan(windowStart) } }),
       challenges.count({ where: { requestIp, createdAt: MoreThan(windowStart) } })
     ]);
-    if (byPhone >= OTP_MAX_REQUESTS_PER_WINDOW || byIp >= OTP_MAX_REQUESTS_PER_WINDOW * 3) {
+    if (byEmail >= OTP_MAX_REQUESTS_PER_WINDOW || byIp >= OTP_MAX_REQUESTS_PER_WINDOW * 3) {
       throw new RateLimitedError();
     }
 
     const code = generateNumericCode(6);
     const challenge = challenges.create({
-      phone,
+      email,
       requestIp,
       codeHash: hashSecret(code),
       attempts: 0,
@@ -56,17 +59,18 @@ export class IdentityService {
     await challenges.save(challenge);
 
     // Never log the code itself outside the dev console sender.
-    await this.otpSender.send(phone, code);
+    await this.otpSender.send(email, code);
   }
 
-  async verifyOtp(phone: string, code: string, displayName: string | undefined): Promise<AuthResult> {
+  async verifyOtp(rawEmail: string, code: string, displayName: string | undefined): Promise<AuthResult> {
+    const email = normalizeEmail(rawEmail);
     // The failed-attempt increment below must survive even though the request itself
     // is rejected — it deliberately runs outside the transaction used for the success
     // path, so a thrown ValidationError/RateLimitedError never rolls it back (a bug
     // caught by test/integration/otp-auth.test.ts's lockout test).
     const challenges = this.dataSource.getRepository(OtpChallengeEntity);
     const challenge = await challenges.findOne({
-      where: { phone, consumedAt: IsNull(), expiresAt: MoreThan(new Date()) },
+      where: { email, consumedAt: IsNull(), expiresAt: MoreThan(new Date()) },
       order: { createdAt: "DESC" }
     });
 
@@ -90,9 +94,9 @@ export class IdentityService {
       await txChallenges.save(challenge);
 
       const users = manager.getRepository(UserEntity);
-      let user = await users.findOne({ where: { phone } });
+      let user = await users.findOne({ where: { email } });
       if (!user) {
-        user = users.create({ phone, displayName: displayName?.trim() || "Vendedor" });
+        user = users.create({ email, displayName: displayName?.trim() || "Vendedor" });
         await users.save(user);
       }
 
@@ -128,4 +132,10 @@ export class IdentityService {
   async purgeExpiredSessions(): Promise<void> {
     await this.dataSource.getRepository(SessionEntity).delete({ expiresAt: LessThan(new Date()) });
   }
+}
+
+// Case-insensitive identity: "Ana@X.com" and "ana@x.com" must resolve to the same user
+// and the same rate-limit bucket, or a user could dodge lockout by re-casing their own email.
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
 }

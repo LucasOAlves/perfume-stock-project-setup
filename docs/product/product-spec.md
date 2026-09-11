@@ -35,8 +35,8 @@ Any feature that does not serve this path is out of Slice 1 by default.
 
 ## MVP Scope (Slice 1 candidates — see `docs/plans/mvp.md` for the full slice breakdown)
 
-- Minimal profile: display name + phone number only.
-- Phone + OTP authentication (see [ADR-004](../decisions/ADR-004-authentication-mechanism.md)).
+- Minimal profile: display name + email only.
+- Email + OTP authentication (see [ADR-004](../decisions/ADR-004-authentication-mechanism.md) for the mechanism, [ADR-010](../decisions/ADR-010-otp-channel-cost-optimization.md) for why email over phone/SMS).
 - Sales Network creation, owner-issued invite links (single-use, expiring, network-scoped).
 - Manual product catalog (name, brand, SKU, barcode/GTIN optional, category, image URL optional, active/inactive).
 - Product search/list showing available quantity to every member.

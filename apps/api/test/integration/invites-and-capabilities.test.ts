@@ -21,8 +21,8 @@ describe("invites and capability enforcement", () => {
     await dataSource.destroy();
   });
 
-  async function createNetworkWithOwner(phone: string) {
-    const owner = await signUp(app, otpSender, phone, "Owner");
+  async function createNetworkWithOwner(email: string) {
+    const owner = await signUp(app, otpSender, email, "Owner");
     const res = await app.inject({
       method: "POST",
       url: "/networks",
@@ -34,7 +34,7 @@ describe("invites and capability enforcement", () => {
   }
 
   it("lets a seller join via a valid invite and see (but not mutate) products", async () => {
-    const { owner, networkId } = await createNetworkWithOwner("+5511900000010");
+    const { owner, networkId } = await createNetworkWithOwner("user11900000010@test.local");
 
     const inviteRes = await app.inject({
       method: "POST",
@@ -43,7 +43,7 @@ describe("invites and capability enforcement", () => {
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
 
-    const seller = await signUp(app, otpSender, "+5511900000011", "Seller");
+    const seller = await signUp(app, otpSender, "user11900000011@test.local", "Seller");
     const acceptRes = await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -79,7 +79,7 @@ describe("invites and capability enforcement", () => {
   });
 
   it("rejects an invite code that has already been used (single-use)", async () => {
-    const { owner, networkId } = await createNetworkWithOwner("+5511900000012");
+    const { owner, networkId } = await createNetworkWithOwner("user11900000012@test.local");
     const inviteRes = await app.inject({
       method: "POST",
       url: `/networks/${networkId}/invites`,
@@ -87,7 +87,7 @@ describe("invites and capability enforcement", () => {
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
 
-    const firstSeller = await signUp(app, otpSender, "+5511900000013", "Seller 1");
+    const firstSeller = await signUp(app, otpSender, "user11900000013@test.local", "Seller 1");
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -95,7 +95,7 @@ describe("invites and capability enforcement", () => {
       payload: { code }
     });
 
-    const secondSeller = await signUp(app, otpSender, "+5511900000014", "Seller 2");
+    const secondSeller = await signUp(app, otpSender, "user11900000014@test.local", "Seller 2");
     const secondAttempt = await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -106,7 +106,7 @@ describe("invites and capability enforcement", () => {
   });
 
   it("rejects a non-owner attempting to create an invite (member.manage is owner-exclusive)", async () => {
-    const { owner, networkId } = await createNetworkWithOwner("+5511900000015");
+    const { owner, networkId } = await createNetworkWithOwner("user11900000015@test.local");
     const inviteRes = await app.inject({
       method: "POST",
       url: `/networks/${networkId}/invites`,
@@ -114,7 +114,7 @@ describe("invites and capability enforcement", () => {
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
 
-    const seller = await signUp(app, otpSender, "+5511900000016", "Seller");
+    const seller = await signUp(app, otpSender, "user11900000016@test.local", "Seller");
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -131,7 +131,7 @@ describe("invites and capability enforcement", () => {
   });
 
   it("rejects a stock quantity that would go negative at creation", async () => {
-    const { owner, networkId } = await createNetworkWithOwner("+5511900000017");
+    const { owner, networkId } = await createNetworkWithOwner("user11900000017@test.local");
     const res = await app.inject({
       method: "POST",
       url: `/networks/${networkId}/products`,

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+**Superseded by [ADR-010](ADR-010-otp-channel-cost-optimization.md)** — kept for the reasoning trail (why SMS/Twilio was the first real send path chosen), but `TwilioOtpSender` was replaced by an email-based sender before any Twilio account was ever created, once cost (not deliverability) became the deciding constraint. `OTP_SENDER=twilio` no longer exists in the codebase.
 
 ## Context
 

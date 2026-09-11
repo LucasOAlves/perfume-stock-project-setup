@@ -21,8 +21,8 @@ describe("stock movements (Slice 2)", () => {
     await dataSource.destroy();
   });
 
-  async function setupNetworkWithProduct(ownerPhone: string, initialQuantity: number) {
-    const owner = await signUp(app, otpSender, ownerPhone, "Owner");
+  async function setupNetworkWithProduct(ownerEmail: string, initialQuantity: number) {
+    const owner = await signUp(app, otpSender, ownerEmail, "Owner");
     const networkRes = await app.inject({
       method: "POST",
       url: "/networks",
@@ -43,7 +43,7 @@ describe("stock movements (Slice 2)", () => {
   }
 
   it("lets the owner record a RESTOCK movement and increases on-hand/available quantity", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000030", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000030@test.local", 5);
 
     const res = await app.inject({
       method: "POST",
@@ -59,7 +59,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("rejects a movement that would take on-hand stock below zero", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000031", 3);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000031@test.local", 3);
 
     const res = await app.inject({
       method: "POST",
@@ -72,7 +72,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("rejects a RESTOCK with a negative delta and an ADJUSTMENT_LOSS with a positive one", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000032", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000032@test.local", 5);
 
     const badRestock = await app.inject({
       method: "POST",
@@ -92,7 +92,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("rejects a movement with no reason", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000033", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000033@test.local", 5);
 
     const res = await app.inject({
       method: "POST",
@@ -104,7 +104,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("rejects a seller without inventory.adjust from recording a movement", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000034", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000034@test.local", 5);
 
     const inviteRes = await app.inject({
       method: "POST",
@@ -113,7 +113,7 @@ describe("stock movements (Slice 2)", () => {
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
 
-    const seller = await signUp(app, otpSender, "+5511900000035", "Seller");
+    const seller = await signUp(app, otpSender, "user11900000035@test.local", "Seller");
     await app.inject({
       method: "POST",
       url: "/invites/accept",
@@ -131,7 +131,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("records who/when/why and lists movement history newest-first, readable via audit.read", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000036", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000036@test.local", 5);
 
     await app.inject({
       method: "POST",
@@ -163,7 +163,7 @@ describe("stock movements (Slice 2)", () => {
   });
 
   it("rejects a seller without audit.read from viewing movement history", async () => {
-    const { owner, networkId, productId } = await setupNetworkWithProduct("+5511900000037", 5);
+    const { owner, networkId, productId } = await setupNetworkWithProduct("user11900000037@test.local", 5);
 
     const inviteRes = await app.inject({
       method: "POST",
@@ -171,7 +171,7 @@ describe("stock movements (Slice 2)", () => {
       headers: { cookie: owner.cookies, "x-csrf-token": owner.csrfToken }
     });
     const code = (inviteRes.json() as { invite: { code: string } }).invite.code;
-    const seller = await signUp(app, otpSender, "+5511900000038", "Seller");
+    const seller = await signUp(app, otpSender, "user11900000038@test.local", "Seller");
     await app.inject({
       method: "POST",
       url: "/invites/accept",

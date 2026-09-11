@@ -2,62 +2,70 @@ import { ExternalServiceError } from "../../shared/errors";
 
 // External, volatile boundary behind an interface per ADR-001/ADR-004.
 export interface OtpSender {
-  send(phone: string, code: string): Promise<void>;
+  send(email: string, code: string): Promise<void>;
 }
 
-// Dev-only. Never use in production — see apps/api/.env.example and ADR-009.
+// Dev-only. Never use in production — see apps/api/.env.example and ADR-010.
 export class ConsoleOtpSender implements OtpSender {
-  async send(phone: string, code: string): Promise<void> {
-    console.log(`[dev-otp] OTP for ${maskPhone(phone)}: ${code}`);
+  async send(email: string, code: string): Promise<void> {
+    console.log(`[dev-otp] OTP for ${maskEmail(email)}: ${code}`);
   }
 }
 
-// Real SMS delivery via Twilio's Messages API — see ADR-009-otp-delivery-channel.md for
-// why SMS (not WhatsApp Business API) and why Twilio. Plain fetch against Twilio's REST
-// API, not the Twilio SDK — the same "no dependency for one endpoint" call already made
-// for catalog-provider.ts, and it keeps this adapter as easy to read as it is to swap out.
-export class TwilioOtpSender implements OtpSender {
+// Real email delivery via Brevo's transactional email API — see
+// ADR-010-otp-channel-cost-optimization.md for why email (not SMS/WhatsApp) and why
+// Brevo specifically: free tier (300 emails/day, no card required) and, unlike Resend,
+// verifying a single sender *address* is enough — no owned domain or DNS records needed.
+// Plain fetch, not Brevo's SDK — same "no dependency for one endpoint" choice already
+// made for catalog-provider.ts and the earlier Twilio adapter this one replaces.
+export class BrevoOtpSender implements OtpSender {
+  private static readonly API_URL = "https://api.brevo.com/v3/smtp/email";
+
   constructor(
-    private readonly accountSid: string,
-    private readonly authToken: string,
-    private readonly fromNumber: string
+    private readonly apiKey: string,
+    private readonly fromEmail: string,
+    private readonly fromName: string
   ) {}
 
-  async send(phone: string, code: string): Promise<void> {
-    const url = `https://api.twilio.com/2010-04-01/Accounts/${this.accountSid}/Messages.json`;
-    const body = new URLSearchParams({
-      To: phone,
-      From: this.fromNumber,
-      Body: `Seu código Estoque Vivo: ${code}. Válido por 5 minutos. Não compartilhe.`
-    });
+  async send(email: string, code: string): Promise<void> {
+    const payload = {
+      sender: { email: this.fromEmail, name: this.fromName },
+      to: [{ email }],
+      subject: `${code} é o seu código de acesso ao Estoque Vivo`,
+      textContent: `Seu código de acesso ao Estoque Vivo: ${code}\n\nVálido por 5 minutos. Não compartilhe este código com ninguém.`
+    };
 
     let response: Response;
     try {
-      response = await fetch(url, {
+      response = await fetch(BrevoOtpSender.API_URL, {
         method: "POST",
         headers: {
-          Authorization: `Basic ${Buffer.from(`${this.accountSid}:${this.authToken}`).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded"
+          "api-key": this.apiKey,
+          "Content-Type": "application/json",
+          Accept: "application/json"
         },
-        body,
+        body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000)
       });
     } catch {
-      // Network failure/timeout reaching Twilio — never leak this as a raw error to the
+      // Network failure/timeout reaching Brevo — never leak this as a raw error to the
       // client (security-model.md "Data Handling / Logging"); the caller (IdentityService)
       // has already persisted the OTP challenge, so the user can just retry.
-      throw new ExternalServiceError("Não foi possível enviar o código por SMS agora, tente novamente");
+      throw new ExternalServiceError("Não foi possível enviar o código por e-mail agora, tente novamente");
     }
 
     if (!response.ok) {
-      // Twilio's error body may include the phone number we just sent to — never log it
-      // verbatim (see maskPhone below), and never forward provider error text to the client.
-      throw new ExternalServiceError("Não foi possível enviar o código por SMS agora, tente novamente");
+      // Brevo's error body may include the address we just sent to — never log it
+      // verbatim (see maskEmail below), and never forward provider error text to the client.
+      throw new ExternalServiceError("Não foi possível enviar o código por e-mail agora, tente novamente");
     }
   }
 }
 
-// Never log a full phone number — see security model "Data Handling / Logging".
-function maskPhone(phone: string): string {
-  return phone.length <= 4 ? "****" : `${phone.slice(0, phone.length - 4).replace(/./g, "*")}${phone.slice(-4)}`;
+// Never log a full email address — see security model "Data Handling / Logging".
+function maskEmail(email: string): string {
+  const [local, domain] = email.split("@");
+  if (!domain) return "****";
+  const maskedLocal = local.length <= 2 ? "**" : `${local[0]}${"*".repeat(local.length - 1)}`;
+  return `${maskedLocal}@${domain}`;
 }

@@ -114,7 +114,7 @@ export class NetworksService {
     });
   }
 
-  // Only display names are exposed here, never phone numbers — phone stays visible
+  // Only display names are exposed here, never email addresses — email stays visible
   // only to the account it belongs to (security-model.md "Authentication").
   async listMembers(userId: string, networkId: string) {
     await resolveMembership(this.dataSource, userId, networkId);

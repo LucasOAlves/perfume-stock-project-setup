@@ -26,8 +26,8 @@ describe("category sanitization and normalization (backend)", () => {
     await dataSource.destroy();
   });
 
-  async function setupOwnerWithNetwork(phone: string) {
-    const owner = await signUp(app, otpSender, phone, "Owner");
+  async function setupOwnerWithNetwork(email: string) {
+    const owner = await signUp(app, otpSender, email, "Owner");
     const networkRes = await app.inject({
       method: "POST",
       url: "/networks",
@@ -48,7 +48,7 @@ describe("category sanitization and normalization (backend)", () => {
   }
 
   it("reuses an existing category's exact casing when a differently-cased/spaced value is sent", async () => {
-    const { owner, networkId } = await setupOwnerWithNetwork("+5511900000090");
+    const { owner, networkId } = await setupOwnerWithNetwork("user11900000090@test.local");
 
     const first = await createProduct(owner, networkId, "Produto A", "Perfumaria");
     expect((first.json() as { product: { category: string } }).product.category).toBe("Perfumaria");
@@ -61,22 +61,22 @@ describe("category sanitization and normalization (backend)", () => {
   });
 
   it("collapses internal whitespace and trims on first use of a category", async () => {
-    const { owner, networkId } = await setupOwnerWithNetwork("+5511900000091");
+    const { owner, networkId } = await setupOwnerWithNetwork("user11900000091@test.local");
 
     const res = await createProduct(owner, networkId, "Produto A", "  Cuidados   com   a pele  ");
     expect((res.json() as { product: { category: string } }).product.category).toBe("Cuidados com a pele");
   });
 
   it("treats an empty or whitespace-only category as no category", async () => {
-    const { owner, networkId } = await setupOwnerWithNetwork("+5511900000092");
+    const { owner, networkId } = await setupOwnerWithNetwork("user11900000092@test.local");
 
     const res = await createProduct(owner, networkId, "Produto A", "   ");
     expect((res.json() as { product: { category: string | null } }).product.category).toBeNull();
   });
 
   it("does not let category reuse leak across networks", async () => {
-    const { owner: ownerA, networkId: networkA } = await setupOwnerWithNetwork("+5511900000093");
-    const { owner: ownerB, networkId: networkB } = await setupOwnerWithNetwork("+5511900000094");
+    const { owner: ownerA, networkId: networkA } = await setupOwnerWithNetwork("user11900000093@test.local");
+    const { owner: ownerB, networkId: networkB } = await setupOwnerWithNetwork("user11900000094@test.local");
 
     await createProduct(ownerA, networkA, "Produto A", "Cabelos");
     const res = await createProduct(ownerB, networkB, "Produto B", "cabelos");
@@ -87,7 +87,7 @@ describe("category sanitization and normalization (backend)", () => {
   });
 
   it("applies the same normalization on update as on create", async () => {
-    const { owner, networkId } = await setupOwnerWithNetwork("+5511900000095");
+    const { owner, networkId } = await setupOwnerWithNetwork("user11900000095@test.local");
 
     await createProduct(owner, networkId, "Produto A", "Maquiagem");
     const createRes = await createProduct(owner, networkId, "Produto B", "Corpo e banho");
