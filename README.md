@@ -26,7 +26,7 @@ Checklist para continuar o desenvolvimento numa máquina nova (o código e as de
 
 Prerequisites: Node.js 20+, a running PostgreSQL instance.
 
-`docker-compose.yml` is provided but **unverified** — Docker didn't work in this project's dev environment so far; the path below (a PostgreSQL server you already have running locally) is the one that's actually been used successfully. Use Docker instead if you have it working: `npm run db:up` starts it with the credentials already in `apps/api/.env.example`.
+Two ways to get PostgreSQL: a server you already have running locally (the path below, used for day-to-day development), or Docker — `npm run db:up` starts the `db` service in `docker-compose.yml` (postgres:16-alpine, healthchecked) with the credentials already in `apps/api/.env.example`. The compose file was verified with Docker Desktop on Windows: it comes up healthy and `psql` connects. It publishes port 5432, so if a native PostgreSQL is already listening there, stop it or change the port mapping before `db:up`. The compose file only defines the database; the API image is built separately with `apps/api/Dockerfile` (see `docs/deploy/aws-runbook.md`).
 
 ```bash
 npm install
