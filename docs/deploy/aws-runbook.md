@@ -28,7 +28,7 @@ Architecture and reasoning: [ADR-011](../decisions/ADR-011-aws-deployment-archit
    docker build -f apps/api/Dockerfile -t estoque-vivo-api .
    ```
 4. Write an env file (`chmod 600`) from Parameter Store, plus:
-   `NODE_ENV=production`, `OTP_SENDER=brevo`, `TRUST_PROXY_HOPS=1`, `API_PATH_PREFIX=/api`, `DATABASE_SSL_CA_PATH=/etc/ssl/rds-global-bundle.pem`.
+   `NODE_ENV=production`, `OTP_SENDER=brevo`, `TRUST_PROXY_HOPS=1`, `API_PATH_PREFIX=/api`, `DATABASE_SSL_CA_PATH=/opt/rds/global-bundle.pem`.
 5. Migrate, then run:
    ```bash
    docker run --rm --env-file /path/to/env estoque-vivo-api npm run migration:run:prod

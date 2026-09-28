@@ -18,7 +18,11 @@ COPY apps/web/package.json apps/web/package.json
 RUN npm ci --workspace apps/api --include-workspace-root=false --omit=dev
 COPY --from=build /repo/apps/api/dist apps/api/dist
 # AWS RDS global CA bundle, used when DATABASE_SSL_CA_PATH points at it (see ADR-011).
-ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /etc/ssl/rds-global-bundle.pem
+# ADD from a URL creates the file as 0600 root, unreadable by the non-root "node" user below,
+# so it goes in its own directory and is made world-readable explicitly. (Do not use ADD --chmod
+# into /etc/ssl: it also strips the directory's execute bit and breaks OpenSSL.)
+ADD https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem /opt/rds/global-bundle.pem
+RUN chmod 755 /opt/rds && chmod 644 /opt/rds/global-bundle.pem
 USER node
 WORKDIR /repo/apps/api
 EXPOSE 3000
