@@ -104,6 +104,16 @@ export async function buildApp(dataSource: DataSource, options: BuildAppOptions 
       reply.code(error.statusCode).send({ error: { code: error.code, message: error.message } });
       return;
     }
+    // Client mistakes raised by Fastify itself (unsupported Content-Type, malformed JSON,
+    // oversized body) keep their 4xx status instead of masquerading as a server fault, which
+    // would also spam error-level logs and alarms with bot traffic. The message is generic on
+    // purpose: never forward Fastify's own text to the client.
+    const clientStatus = (error as { statusCode?: number }).statusCode;
+    if (clientStatus !== undefined && clientStatus >= 400 && clientStatus < 500) {
+      request.log.warn({ code: (error as { code?: string }).code, status: clientStatus }, "client request rejected");
+      reply.code(clientStatus).send({ error: { code: "BAD_REQUEST", message: "Requisição inválida" } });
+      return;
+    }
     request.log.error(error);
     reply.code(500).send({ error: { code: "INTERNAL_ERROR", message: "Algo deu errado" } });
   });
