@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/config/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/config/data-source.ts",
+    "migration:run:prod": "typeorm migration:run -d dist/config/data-source.js",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/config/data-source.ts",
     "typecheck": "tsc --noEmit"
   },

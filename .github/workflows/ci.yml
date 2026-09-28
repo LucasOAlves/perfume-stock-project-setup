@@ -76,6 +76,14 @@ jobs:
       - name: Lint
         run: npx eslint apps/api
 
+  docker:
+    name: docker (build api image)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Build only, no push: catches a broken Dockerfile before it reaches a server (ADR-011).
+      - run: docker build -f apps/api/Dockerfile -t estoque-vivo-api:ci .
+
   web:
     name: web (lint, build)
     runs-on: ubuntu-latest

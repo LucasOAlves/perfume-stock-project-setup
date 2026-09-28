@@ -58,7 +58,15 @@ function defaultOtpSender(): OtpSender {
 }
 
 export async function buildApp(dataSource: DataSource, options: BuildAppOptions = {}): Promise<FastifyInstance> {
-  const app = Fastify({ logger: options.logger ?? true, trustProxy: true });
+  const prefix = env.apiPathPrefix;
+  const app = Fastify({
+    logger: options.logger ?? true,
+    trustProxy: env.trustProxyHops,
+    // CloudFront forwards "/api/..." unchanged; strip it so routes stay prefix-free.
+    rewriteUrl: prefix
+      ? (req) => (req.url?.startsWith(`${prefix}/`) ? req.url.slice(prefix.length) : (req.url ?? "/"))
+      : undefined
+  });
 
   await app.register(cookie);
   // Dev-only allowlist (Angular dev server). Tighten to the real web origin in production config.

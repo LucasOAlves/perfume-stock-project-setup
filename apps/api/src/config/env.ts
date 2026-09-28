@@ -12,6 +12,16 @@ export const env = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   port: Number(process.env.PORT ?? 3000),
   databaseUrl: required("DATABASE_URL"),
+  // Path to a CA bundle (AWS's RDS global bundle in the production image). Unset = no TLS.
+  databaseSslCaPath: process.env.DATABASE_SSL_CA_PATH,
+  // Number of reverse proxies in front of the API whose X-Forwarded-For entry is trusted
+  // (0 = none, the default: request.ip is the socket address). Behind CloudFront -> EC2
+  // it must be exactly 1; "true" (trust every hop) would let a client spoof its IP and
+  // dodge the per-IP OTP rate limit — see ADR-011.
+  trustProxyHops: Number(process.env.TRUST_PROXY_HOPS ?? 0),
+  // Path prefix CloudFront routes to the API (e.g. "/api"); stripped before routing so the
+  // routes themselves stay prefix-free. Empty in local dev and tests.
+  apiPathPrefix: process.env.API_PATH_PREFIX ?? "",
   sessionCookieSecret: required("SESSION_COOKIE_SECRET"),
   otpSender: (process.env.OTP_SENDER ?? "console") as "console" | "brevo",
   // Only required when otpSender === "brevo" — validated at startup in app.ts's

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import type {
   Capability,
@@ -18,7 +18,10 @@ function newIdempotencyKey(): string {
 
 // Hardcoded for MVP local dev; move to Angular environment files once a real
 // staging/production API URL exists.
-const API_BASE = 'http://localhost:3000';
+// Dev build talks to the local API directly; the production build is served from the same
+// CloudFront origin as the API (path /api), which keeps the SameSite=Lax session cookie
+// first-party — see ADR-011.
+const API_BASE = isDevMode() ? 'http://localhost:3000' : '/api';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
