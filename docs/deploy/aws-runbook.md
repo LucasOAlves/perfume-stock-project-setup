@@ -36,6 +36,8 @@ Architecture and reasoning: [ADR-011](../decisions/ADR-011-aws-deployment-archit
    ```
 6. Check `curl localhost:3000/health`.
 
+Steps 3 (build) to 6 are also scripted: from the repo root run `bash scripts/deploy-api.sh`. Re-run it after `git pull` to redeploy.
+
 ## Phase 3 — Site and CloudFront
 
 1. **S3**: private bucket, Block Public Access on. Build the site (`npm run build:web`) and upload `apps/web/dist/web/browser/`.
