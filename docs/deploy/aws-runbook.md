@@ -40,7 +40,7 @@ Steps 3 (build) to 6 are also scripted: from the repo root run `bash scripts/dep
 
 ## Phase 3 — Site and CloudFront
 
-1. **S3**: private bucket, Block Public Access on. Build the site (`npm run build:web`) and upload `apps/web/dist/web/browser/`.
+1. **S3**: private bucket, Block Public Access on. Build the site (`npm run build:web`) and upload `apps/web/dist/web/browser/`. On the EC2 instance this is scripted: `bash scripts/deploy-web.sh <bucket>` (the instance role then also needs `s3:ListBucket`, `s3:PutObject` and `s3:DeleteObject` on that bucket).
 2. **CloudFront** distribution:
    - Origin 1: the S3 bucket with **Origin Access Control**; default behavior serves it. Default root object `index.html`; custom error responses 403/404 → `/index.html` with 200 (Angular routing).
    - Origin 2: the EC2 public DNS, HTTP only, port 3000; behavior path `/api/*`, cache policy **CachingDisabled**, origin request policy **AllViewerExceptHostHeader**, all HTTP methods allowed.
