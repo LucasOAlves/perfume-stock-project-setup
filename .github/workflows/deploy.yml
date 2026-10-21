@@ -65,10 +65,13 @@ jobs:
             case "$status" in Pending|InProgress|Delayed) continue ;; *) break ;; esac
           done
 
-          echo "::group::Instance output (tail)"
-          aws ssm get-command-invocation --command-id "$command_id" --instance-id "$INSTANCE_ID" \
-            --query '[StandardOutputContent, StandardErrorContent]' --output text | tail -n 60
-          echo "::endgroup::"
+          # stdout carries the scripts' progress ("API is up.", "Site uploaded."); stderr is mostly npm/docker noise.
+          for stream in StandardOutputContent StandardErrorContent; do
+            echo "::group::Instance $stream (tail)"
+            aws ssm get-command-invocation --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+              --query "$stream" --output text | tail -n 40
+            echo "::endgroup::"
+          done
           echo "Status: $status"
           [ "$status" = "Success" ]
 
