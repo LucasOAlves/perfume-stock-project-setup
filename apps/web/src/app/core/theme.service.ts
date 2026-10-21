@@ -7,7 +7,9 @@ const STORAGE_KEY = 'theme-preference';
 // Three-way preference (not just light/dark): "system" follows the phone/OS setting via
 // prefers-color-scheme (see styles.css), and only "light"/"dark" write a data-theme
 // attribute that overrides it — matching what the user asked for ("o usuário podendo
-// escolher e também ser de acordo com o celular do usuário").
+// escolher e também ser de acordo com o celular do usuário"). With nothing stored the app
+// starts dark ("tema dark por default"); index.html sets data-theme="dark" up front so the
+// first paint is already dark.
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
   readonly preference = signal<ThemePreference>(this.readStoredPreference());
@@ -52,8 +54,8 @@ export class ThemeService {
         return stored;
       }
     } catch {
-      // localStorage unavailable (private mode, etc.) — fall back to system default.
+      // localStorage unavailable (private mode, etc.) — fall back to the default.
     }
-    return 'system';
+    return 'dark';
   }
 }
