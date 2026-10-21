@@ -4,12 +4,14 @@ name: Deploy
 # scripts on the EC2 instance through SSM Run Command and invalidate CloudFront.
 # Authenticates to AWS with GitHub OIDC; no AWS keys are stored in GitHub. Account-specific
 # values live in repository variables, never in this file (ADR-007). Until
-# AWS_DEPLOY_ROLE_ARN is set the job is skipped.
+# AWS_DEPLOY_ROLE_ARN is set the job is skipped. Can also be run by hand from the Actions tab
+# (deploys the current main).
 on:
   workflow_run:
     workflows: [CI]
     types: [completed]
     branches: [main]
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -22,14 +24,15 @@ concurrency:
 jobs:
   deploy:
     if: >-
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event == 'push' &&
-      vars.AWS_DEPLOY_ROLE_ARN != ''
+      vars.AWS_DEPLOY_ROLE_ARN != '' && (
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.event == 'push'))
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
       AWS_REGION: us-east-1
-      SHA: ${{ github.event.workflow_run.head_sha }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
       INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
       WEB_BUCKET: ${{ vars.WEB_BUCKET }}
       DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}

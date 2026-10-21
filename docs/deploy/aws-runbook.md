@@ -79,7 +79,7 @@ First deployed end to end on 2026-10-21 following this runbook; the notes marked
 
 1. **IAM → Identity providers → Add provider**: OpenID Connect, provider URL `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`.
 2. **IAM → Roles → Create role** → Web identity → that provider, audience `sts.amazonaws.com`, GitHub organization `LucasOAlves`, repository `perfume-stock-project-setup`, branch `main`. No managed policies. Name it `estoque-vivo-github-deploy`.
-3. Add an inline policy to it (replace the placeholders):
+3. Add an inline policy to it (replace the placeholders; `*` in the account field avoids typing the account ID):
    ```json
    {
      "Version": "2012-10-17",
@@ -88,7 +88,7 @@ First deployed end to end on 2026-10-21 following this runbook; the notes marked
          "Effect": "Allow",
          "Action": "ssm:SendCommand",
          "Resource": [
-           "arn:aws:ec2:us-east-1:<account-id>:instance/<instance-id>",
+           "arn:aws:ec2:us-east-1:*:instance/<instance-id>",
            "arn:aws:ssm:us-east-1::document/AWS-RunShellScript"
          ]
        },
@@ -96,13 +96,13 @@ First deployed end to end on 2026-10-21 following this runbook; the notes marked
        {
          "Effect": "Allow",
          "Action": "cloudfront:CreateInvalidation",
-         "Resource": "arn:aws:cloudfront::<account-id>:distribution/<distribution-id>"
+         "Resource": "arn:aws:cloudfront::*:distribution/<distribution-id>"
        }
      ]
    }
    ```
 4. **GitHub → repository Settings → Secrets and variables → Actions → Variables**: `AWS_DEPLOY_ROLE_ARN` (the role's ARN), `EC2_INSTANCE_ID`, `WEB_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`. These are variables, not secrets: none of them grants access on its own, and they stay out of the repository files (ADR-007).
-5. Merge something to `main` and follow the **Deploy** run in the Actions tab. Until `AWS_DEPLOY_ROLE_ARN` is set, the job is skipped.
+5. Test it: Actions tab → **Deploy** → **Run workflow** on `main` (or merge something to `main`). Until `AWS_DEPLOY_ROLE_ARN` is set, the job is skipped. Each run does `git reset --hard` in the checkout on the instance, so edits made by hand there are discarded.
 
 ## Operating it
 
