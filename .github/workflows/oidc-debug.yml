@@ -16,3 +16,7 @@ jobs:
           payload=$(echo "$token" | cut -d. -f2 | tr '_-' '/+')
           while [ $(( ${#payload} % 4 )) -ne 0 ]; do payload="$payload="; done
           echo "$payload" | base64 -d | jq '{sub, aud, iss, ref, event_name, repository, repository_owner_id, repository_id}'
+          echo "Trying to assume the deploy role with this token..."
+          aws sts assume-role-with-web-identity --role-arn "${{ vars.AWS_DEPLOY_ROLE_ARN }}" \
+            --role-session-name oidc-debug --web-identity-token "$token" \
+            --query AssumedRoleUser.Arn --output text || true
