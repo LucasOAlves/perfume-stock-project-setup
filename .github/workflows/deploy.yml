@@ -1,0 +1,79 @@
+name: Deploy
+
+# Continuous deployment (ADR-012): after CI passes on a push to main, run the deploy
+# scripts on the EC2 instance through SSM Run Command and invalidate CloudFront.
+# Authenticates to AWS with GitHub OIDC; no AWS keys are stored in GitHub. Account-specific
+# values live in repository variables, never in this file (ADR-007). Until
+# AWS_DEPLOY_ROLE_ARN is set the job is skipped. Can also be run by hand from the Actions tab
+# (deploys the current main).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      vars.AWS_DEPLOY_ROLE_ARN != '' && (
+        (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+        (github.event.workflow_run.conclusion == 'success' &&
+         github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      AWS_REGION: us-east-1
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+      WEB_BUCKET: ${{ vars.WEB_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - name: Run the deploy scripts on the instance
+        run: |
+          set -euo pipefail
+          # SSM runs as root; the checkout, docker group and ~/api.env belong to ec2-user.
+          script="cd ~/perfume-stock-project-setup && git fetch -q origin main && git reset -q --hard $SHA && bash scripts/deploy-api.sh && bash scripts/deploy-web.sh $WEB_BUCKET"
+          params=$(jq -n --arg cmd "sudo -u ec2-user -H bash -lc '$script'" \
+            '{commands: [$cmd], executionTimeout: ["2400"]}')
+          command_id=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy $SHA" \
+            --parameters "$params" \
+            --query Command.CommandId --output text)
+          echo "SSM command $command_id"
+
+          status=Pending
+          for _ in $(seq 1 240); do
+            sleep 10
+            status=$(aws ssm get-command-invocation --command-id "$command_id" \
+              --instance-id "$INSTANCE_ID" --query Status --output text 2>/dev/null || echo Pending)
+            case "$status" in Pending|InProgress|Delayed) continue ;; *) break ;; esac
+          done
+
+          echo "::group::Instance output (tail)"
+          aws ssm get-command-invocation --command-id "$command_id" --instance-id "$INSTANCE_ID" \
+            --query '[StandardOutputContent, StandardErrorContent]' --output text | tail -n 60
+          echo "::endgroup::"
+          echo "Status: $status"
+          [ "$status" = "Success" ]
+
+      - name: Invalidate CloudFront
+        if: env.DISTRIBUTION_ID != ''
+        run: |
+          aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' \
+            --query Invalidation.Id --output text

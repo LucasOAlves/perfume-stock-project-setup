@@ -73,9 +73,40 @@ First deployed end to end on 2026-10-21 following this runbook; the notes marked
 6. Origins → Create origin: the EC2 **Public IPv4 DNS**, HTTP only, port 3000, name `api-ec2`. Behaviors → Create behavior: path `/api/*`, origin `api-ec2`, Redirect HTTP to HTTPS, all HTTP methods, cache policy **CachingDisabled**, origin request policy **AllViewerExceptHostHeader**, no function. It must sit above Default (\*) (precedence 0).
 7. Once the distribution is deployed: `https://<distribution>.cloudfront.net/api/health` returns `{"ok":true}`, then log in by email on `https://<distribution>.cloudfront.net`.
 
+## Phase 4 — Continuous deployment (optional)
+
+[ADR-012](../decisions/ADR-012-continuous-deployment.md). After CI passes on a push to `main`, `.github/workflows/deploy.yml` runs the two deploy scripts on the instance through SSM Run Command and invalidates CloudFront. One-time setup:
+
+1. **IAM → Identity providers → Add provider**: OpenID Connect, provider URL `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`.
+2. **IAM → Roles → Create role** → Web identity → that provider, audience `sts.amazonaws.com`, GitHub organization `LucasOAlves`, repository `perfume-stock-project-setup`, branch `main`. No managed policies. Name it `estoque-vivo-github-deploy`.
+3. Add an inline policy to it (replace the placeholders; `*` in the account field avoids typing the account ID):
+   ```json
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Action": "ssm:SendCommand",
+         "Resource": [
+           "arn:aws:ec2:us-east-1:*:instance/<instance-id>",
+           "arn:aws:ssm:us-east-1::document/AWS-RunShellScript"
+         ]
+       },
+       { "Effect": "Allow", "Action": "ssm:GetCommandInvocation", "Resource": "*" },
+       {
+         "Effect": "Allow",
+         "Action": "cloudfront:CreateInvalidation",
+         "Resource": "arn:aws:cloudfront::*:distribution/<distribution-id>"
+       }
+     ]
+   }
+   ```
+4. **GitHub → repository Settings → Secrets and variables → Actions → Variables**: `AWS_DEPLOY_ROLE_ARN` (the role's ARN), `EC2_INSTANCE_ID`, `WEB_BUCKET`, `CLOUDFRONT_DISTRIBUTION_ID`. These are variables, not secrets: none of them grants access on its own, and they stay out of the repository files (ADR-007).
+5. Test it: Actions tab → **Deploy** → **Run workflow** on `main` (or merge something to `main`). Until `AWS_DEPLOY_ROLE_ARN` is set, the job is skipped. Each run does `git reset --hard` in the checkout on the instance, so edits made by hand there are discarded.
+
 ## Operating it
 
-- **Redeploy** after changes on `main`: on the instance, `git pull`, then `bash scripts/deploy-api.sh` and/or `bash scripts/deploy-web.sh <bucket>`.
+- **Redeploy** after changes on `main`: automatic once Phase 4 is set up; by hand, on the instance, `git pull`, then `bash scripts/deploy-api.sh` and/or `bash scripts/deploy-web.sh <bucket>`.
 - **Reboot is safe; Stop/Start is not.** Stop/Start gives the instance a new public IP and DNS, which breaks the Brevo allow-list and the CloudFront `api-ec2` origin until both are updated. An Elastic IP would remove this, at the same hourly cost as the public IPv4 already paid.
 - **Logs**: `docker logs --tail 50 api`.
 
