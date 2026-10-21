@@ -79,6 +79,7 @@ First deployed end to end on 2026-10-21 following this runbook; the notes marked
 
 1. **IAM → Identity providers → Add provider**: OpenID Connect, provider URL `https://token.actions.githubusercontent.com`, audience `sts.amazonaws.com`.
 2. **IAM → Roles → Create role** → Web identity → that provider, audience `sts.amazonaws.com`, GitHub organization `LucasOAlves`, repository `perfume-stock-project-setup`, branch `main`. No managed policies. Name it `estoque-vivo-github-deploy`.
+   **Gotcha:** repositories created or renamed after 2026-07-15 send an immutable-ID subject (`repo:<owner>@<owner-id>/<repo>@<repo-id>:ref:refs/heads/main`), but the wizard writes the old `repo:<owner>/<repo>:…` form and every run fails with "Not authorized to perform sts:AssumeRoleWithWebIdentity". Edit the trust policy's `sub` to the ID form; the IDs come from `https://api.github.com/repos/<owner>/<repo>` (`owner.id` and `id`).
 3. Add an inline policy to it (replace the placeholders; `*` in the account field avoids typing the account ID):
    ```json
    {
