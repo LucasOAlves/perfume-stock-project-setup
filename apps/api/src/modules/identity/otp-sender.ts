@@ -47,7 +47,10 @@ export class BrevoOtpSender implements OtpSender {
         body: JSON.stringify(payload),
         signal: AbortSignal.timeout(10000)
       });
-    } catch {
+    } catch (err) {
+      console.error(
+        `[brevo] request failed for ${maskEmail(email)}: ${err instanceof Error ? err.name : "unknown error"}`
+      );
       // Network failure/timeout reaching Brevo — never leak this as a raw error to the
       // client (security-model.md "Data Handling / Logging"); the caller (IdentityService)
       // has already persisted the OTP challenge, so the user can just retry.
@@ -55,14 +58,23 @@ export class BrevoOtpSender implements OtpSender {
     }
 
     if (!response.ok) {
-      // Brevo's error body may include the address we just sent to — never log it
-      // verbatim (see maskEmail below), and never forward provider error text to the client.
+      // Brevo's error body may include the address we just sent to — log it only with every
+      // address redacted, and never forward provider error text to the client. The log is the
+      // only way to tell a rejected key, an unverified sender or a blocked IP apart.
+      const body = await response.text().catch(() => "");
+      console.error(
+        `[brevo] send to ${maskEmail(email)} rejected: HTTP ${response.status} ${redactEmails(body).slice(0, 500)}`
+      );
       throw new ExternalServiceError("Não foi possível enviar o código por e-mail agora, tente novamente");
     }
   }
 }
 
 // Never log a full email address — see security model "Data Handling / Logging".
+export function redactEmails(text: string): string {
+  return text.replace(/[^\s"'<>@]+@[^\s"'<>@]+\.[^\s"'<>@]+/g, (match) => maskEmail(match));
+}
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   if (!domain) return "****";
